@@ -32,42 +32,59 @@ with col1:
 with col2:
     etf_metric = st.selectbox(
         "Select ETF Metric",
-        ["Price", "Volume", "Net Flows", "Assets Under Management"]
+        ["Price", "Volume", "Net Flows"]
     )
 
-# Column name mapping
+# Column name mappings
 onchain_column_mapping = {
     "Active Addresses": "active_addresses",
     "Transaction Volume": "transaction_volume",
     "Hash Rate": "hash_rate",
-    "Mining Revenue": "mining_revenue" # Added assuming this column exists
+    "Mining Revenue": "mining_revenue"
+}
+
+etf_column_mapping = {
+    "Price": "Close",
+    "Volume": "Volume",
+    "Net Flows": "net_flows"
 }
 
 # Display correlation analysis
 if not btc_price.empty and etf_data and not onchain_data.empty:
     st.subheader(f"Correlation: {onchain_metric} vs {etf_metric}")
 
-    #Corrected y-axis selection using the mapping
     try:
-        y_column = onchain_column_mapping[onchain_metric]
-    except KeyError:
-        st.error(f"Column for {onchain_metric} not found in the dataset.")
-        st.stop()
+        # Get the selected ETF data
+        first_etf_data = next(iter(etf_data.values()))['history']
 
+        # Create a merged dataset for correlation
+        merged_data = pd.merge(
+            onchain_data,
+            first_etf_data[etf_column_mapping[etf_metric]],
+            left_index=True,
+            right_index=True,
+            how='inner'
+        )
 
-    # Create correlation plot
-    fig = px.scatter(
-        onchain_data,
-        x=onchain_column_mapping[onchain_metric],
-        y=y_column,
-        trendline="ols",
-        title=f"{onchain_metric} vs {etf_metric} Correlation"
-    )
-    st.plotly_chart(fig, use_container_width=True)
+        # Create correlation plot
+        fig = px.scatter(
+            merged_data,
+            x=onchain_column_mapping[onchain_metric],
+            y=etf_column_mapping[etf_metric],
+            trendline="ols",
+            title=f"{onchain_metric} vs {etf_metric} Correlation"
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
-    # Calculate and display correlation coefficient
-    correlation = onchain_data[onchain_column_mapping[onchain_metric]].corr(onchain_data[y_column])
-    st.metric("Correlation Coefficient", f"{correlation:.2f}")
+        # Calculate and display correlation coefficient
+        correlation = merged_data[onchain_column_mapping[onchain_metric]].corr(
+            merged_data[etf_column_mapping[etf_metric]]
+        )
+        st.metric("Correlation Coefficient", f"{correlation:.2f}")
+
+    except (KeyError, StopIteration) as e:
+        st.error("Error processing data. Please ensure all required metrics are available.")
+        st.exception(e)
 else:
     st.error("Unable to load data. Please try again later.")
 
