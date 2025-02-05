@@ -1,33 +1,50 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@400;500;700&display=swap');
 
+/* Base styles */
 .stApp {
     font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa;
 }
 
+/* Card styles */
 .metric-card {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background-color: #ffffff;
+    padding: 1.25rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 0.5rem 0;
 }
 
+/* Color styles */
 .positive-trend {
     color: #4CAF50 !important;
+    font-weight: 500;
 }
 
 .negative-trend {
     color: #FF5252 !important;
+    font-weight: 500;
 }
 
+/* Section styles */
 .education-section {
-    background-color: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    margin: 20px 0;
+    background-color: #ffffff;
+    padding: 1.25rem;
+    border-radius: 0.5rem;
+    margin: 1.25rem 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
+/* Tab styles */
 div.stTabs {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
+    background-color: #ffffff;
+    padding: 1.25rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Ensure proper text contrast */
+.stMarkdown, .stText {
+    color: #2c3e50;
 }
