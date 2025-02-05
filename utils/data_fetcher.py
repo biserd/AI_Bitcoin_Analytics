@@ -38,22 +38,26 @@ def fetch_etf_data():
             ticker = yf.Ticker(etf)
             history = ticker.history(period="1mo")
             
+            # Basic data validation
+            if history is None:
+                st.warning(f"No data returned for {etf}")
+                continue
+                
+            # Ensure we have a DataFrame
             if not isinstance(history, pd.DataFrame):
-                st.warning(f"Invalid data type for {etf}")
+                st.warning(f"Invalid data type received for {etf}")
                 continue
                 
-            # Convert to DataFrame if Series
-            if isinstance(history, pd.Series):
-                history = history.to_frame()
-                
-            # Check if DataFrame is empty using the empty property
-            if history.empty:
-                st.warning(f"No data available for {etf}")
+            # Check for data
+            if len(history) == 0:
+                st.warning(f"No historical data available for {etf}")
                 continue
                 
+            # Validate columns
             required_columns = ['Close', 'Open', 'High', 'Low']
-            if not all(col in history.columns for col in required_columns):
-                st.warning(f"Missing required columns for {etf}")
+            missing_cols = [col for col in required_columns if col not in history.columns]
+            if missing_cols:
+                st.warning(f"Missing columns for {etf}: {', '.join(missing_cols)}")
                 continue
 
             # Safely get ticker info
