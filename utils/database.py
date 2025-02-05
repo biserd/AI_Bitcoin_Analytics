@@ -142,7 +142,7 @@ def store_onchain_metrics(metrics_df):
         for index, row in metrics_df.iterrows():
             try:
                 metric = OnchainMetric(
-                    timestamp=row['date'],
+                    timestamp=index,  # Use the index as timestamp since it contains the date
                     active_addresses=int(row['active_addresses']),
                     transaction_volume=float(row['transaction_volume']),
                     hash_rate=float(row['hash_rate'])
