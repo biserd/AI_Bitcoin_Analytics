@@ -36,12 +36,13 @@ def fetch_etf_data():
     for etf in etfs:
         try:
             ticker = yf.Ticker(etf)
-            history = ticker.history(period="1mo")
+            # Changed from 1mo to 1y to match onchain data timeframe
+            history = ticker.history(period="1y")
             if history is None or len(history) == 0:
                 st.warning(f"No data available for {etf}")
                 continue
-                
-            required_columns = ['Close', 'Open', 'High', 'Low']
+
+            required_columns = ['Close', 'Open', 'High', 'Low', 'Volume']
             has_required = all(col in history.columns for col in required_columns)
             if not has_required:
                 st.warning(f"Missing required price columns for {etf}")
@@ -83,8 +84,10 @@ def fetch_etf_data():
 def fetch_onchain_metrics():
     """Fetch on-chain metrics and store in database"""
     try:
-        # Generate sample data for demonstration
-        dates = pd.date_range(start='2023-01-01', end=datetime.now(), freq='D')
+        # Generate sample data for the last year to match ETF data
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=365)
+        dates = pd.date_range(start=start_date, end=end_date, freq='D')
 
         data = {
             'date': dates,
@@ -94,6 +97,7 @@ def fetch_onchain_metrics():
         }
 
         df = pd.DataFrame(data)
+        df.set_index('date', inplace=True)
 
         # Store in database
         store_onchain_metrics(df)
