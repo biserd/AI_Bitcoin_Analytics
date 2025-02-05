@@ -1,14 +1,16 @@
 import streamlit as st
 import pandas as pd
 from utils.data_fetcher import fetch_bitcoin_price, fetch_etf_data, fetch_onchain_metrics
-from utils.visualizations import create_price_chart
+from utils.visualizations import create_price_chart, create_etf_comparison
 from components.metrics import display_metrics_section
+from components.education import display_education_section
 
 # Page configuration
 st.set_page_config(
     page_title="Bitcoin Analytics Dashboard",
     page_icon="📈",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 # Load custom CSS
@@ -19,10 +21,21 @@ with open('styles/custom.css') as f:
 st.title("Bitcoin Analytics Dashboard")
 st.markdown("### Comprehensive Bitcoin ETF and On-Chain Analytics Platform")
 
+# Sidebar for navigation
+st.sidebar.title("Navigation")
+page = st.sidebar.radio(
+    "Select Analysis",
+    ["Overview", "ETF Analysis", "Market Metrics", "Education"]
+)
+
 # Load key metrics for homepage
 with st.spinner('Fetching latest data...'):
     btc_price = fetch_bitcoin_price()
+    etf_data = fetch_etf_data()
     onchain_data = fetch_onchain_metrics()
+
+if page == "Overview":
+    # Display metrics section if data is available
     if not btc_price.empty and not onchain_data.empty:
         display_metrics_section(btc_price, onchain_data)
     else:
@@ -33,37 +46,51 @@ with st.spinner('Fetching latest data...'):
         st.subheader("Bitcoin Price Overview")
         st.plotly_chart(create_price_chart(btc_price), use_container_width=True)
 
-# Feature Overview
-st.header("Available Analytics Features")
+    # ETF Comparison
+    if etf_data:
+        st.subheader("ETF Performance Comparison")
+        st.plotly_chart(create_etf_comparison(etf_data), use_container_width=True)
 
-col1, col2 = st.columns(2)
+elif page == "ETF Analysis":
+    st.header("ETF Analysis")
+    if etf_data:
+        # ETF Performance Metrics
+        for etf_name, etf_info in etf_data.items():
+            with st.expander(f"{etf_name} Details"):
+                if 'history' in etf_info and not etf_info['history'].empty:
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.metric(
+                            "Current Price",
+                            f"${etf_info['history']['Close'].iloc[-1]:.2f}",
+                            f"{((etf_info['history']['Close'].iloc[-1] / etf_info['history']['Close'].iloc[-2]) - 1) * 100:.2f}%"
+                        )
+                    with col2:
+                        st.metric(
+                            "Volume",
+                            f"{etf_info['history']['Volume'].iloc[-1]:,.0f}"
+                        )
 
-with col1:
-    st.subheader("📊 Market Analysis")
-    st.write("""
-    - Correlation Analysis
-    - Tracking Error & Performance
-    - Liquidity & Volume Insights
-    """)
+                    # Historical performance chart
+                    st.line_chart(etf_info['history']['Close'])
 
-    st.subheader("📈 Risk Management")
-    st.write("""
-    - Risk Metrics and Alerts
-    - Portfolio Diversification
-    """)
+elif page == "Market Metrics":
+    st.header("Market Metrics")
+    if not onchain_data.empty:
+        # Display on-chain metrics
+        metrics_tab1, metrics_tab2 = st.tabs(["Network Activity", "Mining Metrics"])
 
-with col2:
-    st.subheader("💰 ETF Analysis")
-    st.write("""
-    - Fee and Expense Analysis
-    - Comparative Analytics
-    """)
+        with metrics_tab1:
+            st.subheader("Network Activity")
+            st.line_chart(onchain_data['active_addresses'])
+            st.line_chart(onchain_data['transaction_volume'])
 
-    st.subheader("📰 Market Intelligence")
-    st.write("""
-    - Regulatory Updates
-    - Market Sentiment Indicators
-    """)
+        with metrics_tab2:
+            st.subheader("Mining Metrics")
+            st.line_chart(onchain_data['hash_rate'])
+
+elif page == "Education":
+    display_education_section()
 
 # Footer
 st.markdown("---")
