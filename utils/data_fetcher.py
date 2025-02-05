@@ -36,26 +36,25 @@ def fetch_etf_data():
     for etf in etfs:
         try:
             ticker = yf.Ticker(etf)
-            try:
-                history = ticker.history(period="1mo")
-                if history is None or len(history) == 0:
-                    st.warning(f"No data available for {etf}")
-                    continue
-                    
-                required_columns = ['Close', 'Open', 'High', 'Low']
-                has_required = all(col in history.columns for col in required_columns)
-                if not has_required:
-                    st.warning(f"Missing required price columns for {etf}")
-                    continue
+            history = ticker.history(period="1mo")
+            if history is None or len(history) == 0:
+                st.warning(f"No data available for {etf}")
+                continue
+                
+            required_columns = ['Close', 'Open', 'High', 'Low']
+            has_required = all(col in history.columns for col in required_columns)
+            if not has_required:
+                st.warning(f"Missing required price columns for {etf}")
+                continue
 
-                # Convert any numeric columns to float
-                for col in required_columns:
-                    if col in history.columns:
-                        history[col] = history[col].astype(float)
+            # Convert any numeric columns to float
+            for col in required_columns:
+                if col in history.columns:
+                    history[col] = history[col].astype(float)
 
-                # Safely get ticker info
+            # Safely get ticker info
+            info = {}
             try:
-                info = {}
                 if hasattr(ticker, 'info'):
                     info_dict = ticker.info
                     if isinstance(info_dict, dict):
