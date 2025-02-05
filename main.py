@@ -6,7 +6,7 @@ from utils.visualizations import create_price_chart, create_metric_chart, create
 from components.metrics import display_metrics_section
 from components.education import display_education_section
 
-# Page configuration
+# Page configuration must be the first Streamlit command
 st.set_page_config(
     page_title="Bitcoin Analytics Dashboard",
     page_icon="📈",
