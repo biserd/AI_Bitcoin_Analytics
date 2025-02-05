@@ -16,20 +16,16 @@ def fetch_bitcoin_price():
         btc = yf.Ticker("BTC-USD")
         history = btc.history(period="1y")
 
-        if history.empty:
+        if isinstance(history, pd.DataFrame) and history.empty:
             st.error("No Bitcoin price data available")
-            return pd.DataFrame({
-                'Open': [], 'High': [], 'Low': [], 'Close': [], 'Volume': []
-            })
+            return pd.DataFrame()
 
         # Store in database
         store_bitcoin_price(history)
         return history
     except Exception as e:
         st.error(f"Error fetching Bitcoin price data: {str(e)}")
-        return pd.DataFrame({
-            'Open': [], 'High': [], 'Low': [], 'Close': [], 'Volume': []
-        })
+        return pd.DataFrame()
 
 @st.cache_data(ttl=3600)
 def fetch_etf_data():
@@ -42,21 +38,38 @@ def fetch_etf_data():
             ticker = yf.Ticker(etf)
             history = ticker.history(period="1mo")
 
-            if not history.empty:  # Explicit check for empty DataFrame
-                info = ticker.info if hasattr(ticker, 'info') else {}
-                data[etf] = {
-                    'info': info,
-                    'history': history
-                }
-                # Store in database
-                store_etf_data(etf, data[etf])
-            else:
+            # Safe type checking and validation
+            if not isinstance(history, pd.DataFrame):
+                st.warning(f"Invalid data type for {etf} history")
+                continue
+
+            if history.empty:
                 st.warning(f"No historical data available for {etf}")
+                continue
+
+            if 'Close' not in history.columns:
+                st.warning(f"Missing price data for {etf}")
+                continue
+
+            # Safely get ticker info
+            try:
+                info = ticker.info if hasattr(ticker, 'info') else {}
+            except (AttributeError, TypeError):
+                info = {}
+
+            data[etf] = {
+                'info': info,
+                'history': history
+            }
+
+            # Store valid data in database
+            store_etf_data(etf, data[etf])
+
         except Exception as e:
             st.warning(f"Error fetching data for {etf}: {str(e)}")
             continue
 
-    if not data:
+    if len(data) == 0:
         st.warning("No ETF data available")
 
     return data
@@ -79,16 +92,10 @@ def fetch_onchain_metrics():
 
         # Store in database
         store_onchain_metrics(df)
-
         return df
     except Exception as e:
         st.error(f"Error generating on-chain metrics: {str(e)}")
-        return pd.DataFrame({
-            'date': [], 
-            'active_addresses': [], 
-            'transaction_volume': [], 
-            'hash_rate': []
-        })
+        return pd.DataFrame()
 
 def get_historical_metrics():
     """Retrieve historical metrics from database"""
@@ -111,9 +118,4 @@ def get_historical_metrics():
         } for metric in latest_metrics])
     except Exception as e:
         st.error(f"Error retrieving historical metrics: {str(e)}")
-        return pd.DataFrame({
-            'date': [], 
-            'active_addresses': [], 
-            'transaction_volume': [], 
-            'hash_rate': []
-        })
+        return pd.DataFrame()
