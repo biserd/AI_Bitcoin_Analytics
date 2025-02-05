@@ -35,22 +35,38 @@ with col2:
         ["Price", "Volume", "Net Flows", "Assets Under Management"]
     )
 
+# Column name mapping
+onchain_column_mapping = {
+    "Active Addresses": "active_addresses",
+    "Transaction Volume": "transaction_volume",
+    "Hash Rate": "hash_rate",
+    "Mining Revenue": "mining_revenue" # Added assuming this column exists
+}
+
 # Display correlation analysis
 if not btc_price.empty and etf_data and not onchain_data.empty:
     st.subheader(f"Correlation: {onchain_metric} vs {etf_metric}")
-    
+
+    #Corrected y-axis selection using the mapping
+    try:
+        y_column = onchain_column_mapping[onchain_metric]
+    except KeyError:
+        st.error(f"Column for {onchain_metric} not found in the dataset.")
+        st.stop()
+
+
     # Create correlation plot
     fig = px.scatter(
         onchain_data,
-        x=onchain_metric.lower().replace(" ", "_"),
-        y="price",
+        x=onchain_column_mapping[onchain_metric],
+        y=y_column,
         trendline="ols",
         title=f"{onchain_metric} vs {etf_metric} Correlation"
     )
     st.plotly_chart(fig, use_container_width=True)
-    
+
     # Calculate and display correlation coefficient
-    correlation = onchain_data[onchain_metric.lower().replace(" ", "_")].corr(onchain_data["price"])
+    correlation = onchain_data[onchain_column_mapping[onchain_metric]].corr(onchain_data[y_column])
     st.metric("Correlation Coefficient", f"{correlation:.2f}")
 else:
     st.error("Unable to load data. Please try again later.")
@@ -62,6 +78,6 @@ with st.expander("Understanding Correlation Analysis"):
     - A correlation of 1.0 indicates perfect positive correlation
     - A correlation of -1.0 indicates perfect negative correlation
     - A correlation of 0 indicates no linear relationship
-    
+
     This analysis can help identify leading indicators and market patterns.
     """)
