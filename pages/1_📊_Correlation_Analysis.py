@@ -62,9 +62,9 @@ if not btc_price.empty and etf_data and not onchain_data.empty:
         st.write(f"On-chain data shape: {onchain_data.shape}")
         st.write(f"ETF data shape: {first_etf_data.shape}")
 
-        # Ensure both DataFrames have datetime index
-        onchain_data.index = pd.to_datetime(onchain_data.index)
-        first_etf_data.index = pd.to_datetime(first_etf_data.index)
+        # Convert timezone-aware timestamps to naive timestamps for both DataFrames
+        onchain_data.index = pd.to_datetime(onchain_data.index).tz_localize(None)
+        first_etf_data.index = pd.to_datetime(first_etf_data.index).tz_localize(None)
 
         # Create a merged dataset for correlation
         merged_data = pd.merge(
