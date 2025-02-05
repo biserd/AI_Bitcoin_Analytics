@@ -42,15 +42,19 @@ def fetch_etf_data():
             ticker = yf.Ticker(etf)
             history = ticker.history(period="1mo")
 
-            if not history.empty:
+            if not history.empty:  # Explicit check for empty DataFrame
+                info = ticker.info if hasattr(ticker, 'info') else {}
                 data[etf] = {
-                    'info': ticker.info,
+                    'info': info,
                     'history': history
                 }
                 # Store in database
                 store_etf_data(etf, data[etf])
+            else:
+                st.warning(f"No historical data available for {etf}")
         except Exception as e:
             st.warning(f"Error fetching data for {etf}: {str(e)}")
+            continue
 
     if not data:
         st.warning("No ETF data available")
@@ -61,6 +65,7 @@ def fetch_etf_data():
 def fetch_onchain_metrics():
     """Fetch on-chain metrics and store in database"""
     try:
+        # Generate sample data for demonstration
         dates = pd.date_range(start='2023-01-01', end=datetime.now(), freq='D')
 
         data = {
@@ -94,6 +99,9 @@ def get_historical_metrics():
         latest_metrics = db.query(OnchainMetric).order_by(
             OnchainMetric.timestamp.desc()
         ).limit(30).all()
+
+        if not latest_metrics:
+            return pd.DataFrame()
 
         return pd.DataFrame([{
             'date': metric.timestamp,
