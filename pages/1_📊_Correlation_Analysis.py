@@ -57,6 +57,15 @@ if not btc_price.empty and etf_data and not onchain_data.empty:
         # Get the selected ETF data
         first_etf_data = next(iter(etf_data.values()))['history']
 
+        # Debug information
+        st.write("### Data Validation")
+        st.write(f"On-chain data shape: {onchain_data.shape}")
+        st.write(f"ETF data shape: {first_etf_data.shape}")
+
+        # Ensure both DataFrames have datetime index
+        onchain_data.index = pd.to_datetime(onchain_data.index)
+        first_etf_data.index = pd.to_datetime(first_etf_data.index)
+
         # Create a merged dataset for correlation
         merged_data = pd.merge(
             onchain_data,
@@ -66,21 +75,39 @@ if not btc_price.empty and etf_data and not onchain_data.empty:
             how='inner'
         )
 
-        # Create correlation plot
-        fig = px.scatter(
-            merged_data,
-            x=onchain_column_mapping[onchain_metric],
-            y=etf_column_mapping[etf_metric],
-            trendline="ols",
-            title=f"{onchain_metric} vs {etf_metric} Correlation"
-        )
-        st.plotly_chart(fig, use_container_width=True)
+        # Debug merged data
+        st.write(f"Merged data shape: {merged_data.shape}")
 
-        # Calculate and display correlation coefficient
-        correlation = merged_data[onchain_column_mapping[onchain_metric]].corr(
-            merged_data[etf_column_mapping[etf_metric]]
-        )
-        st.metric("Correlation Coefficient", f"{correlation:.2f}")
+        # Check for missing values
+        missing_values = merged_data[[onchain_column_mapping[onchain_metric], etf_column_mapping[etf_metric]]].isnull().sum()
+        if missing_values.any():
+            st.warning(f"Missing values detected:\n{missing_values}")
+            # Drop missing values for correlation calculation
+            merged_data = merged_data.dropna()
+            st.write(f"Shape after dropping missing values: {merged_data.shape}")
+
+        if not merged_data.empty:
+            # Create correlation plot
+            fig = px.scatter(
+                merged_data,
+                x=onchain_column_mapping[onchain_metric],
+                y=etf_column_mapping[etf_metric],
+                trendline="ols",
+                title=f"{onchain_metric} vs {etf_metric} Correlation"
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+            # Calculate and display correlation coefficient
+            correlation = merged_data[onchain_column_mapping[onchain_metric]].corr(
+                merged_data[etf_column_mapping[etf_metric]]
+            )
+
+            if pd.isna(correlation):
+                st.error("Unable to calculate correlation. Please check if the selected metrics contain valid numerical data.")
+            else:
+                st.metric("Correlation Coefficient", f"{correlation:.2f}")
+        else:
+            st.error("No overlapping data points found between the selected metrics.")
 
     except (KeyError, StopIteration) as e:
         st.error("Error processing data. Please ensure all required metrics are available.")
