@@ -43,13 +43,14 @@ def fetch_etf_data():
                 st.warning(f"Invalid data type for {etf}")
                 continue
 
-            if len(history.index) == 0:  # Using len instead of .empty
+            if history.empty:
                 st.warning(f"No data available for {etf}")
                 continue
 
             required_columns = ['Close', 'Open', 'High', 'Low']
-            if not all(col in history.columns for col in required_columns):
-                st.warning(f"Missing required price data columns for {etf}")
+            missing_columns = [col for col in required_columns if col not in history.columns]
+            if missing_columns:
+                st.warning(f"Missing required price columns for {etf}: {', '.join(missing_columns)}")
                 continue
 
             # Safely get ticker info
