@@ -37,7 +37,7 @@ def fetch_etf_data():
         try:
             ticker = yf.Ticker(etf)
             history = ticker.history(period="1y")
-            
+
             if not isinstance(history, pd.DataFrame) or history.empty or len(history.index) == 0:
                 continue
 
@@ -50,19 +50,30 @@ def fetch_etf_data():
                 if col in history.columns:
                     history[col] = history[col].astype(float)
 
-            # Safely get ticker info
-            info = {}
-            try:
-                if hasattr(ticker, 'info'):
-                    info_dict = ticker.info
-                    if isinstance(info_dict, dict):
-                        info = info_dict
-            except Exception:
-                info = {}
+            # Generate simulated orderbook data
+            current_price = history['Close'].iloc[-1]
+            spread_percentage = 0.001  # 0.1% spread
+            depth_levels = 10
+
+            # Generate bid and ask prices around the current price
+            bid_prices = [current_price * (1 - spread_percentage * (i + 1)) for i in range(depth_levels)]
+            ask_prices = [current_price * (1 + spread_percentage * (i + 1)) for i in range(depth_levels)]
+
+            # Generate volumes that decrease as price moves away from current price
+            base_volume = history['Volume'].mean() / 100
+            volumes = [base_volume * (1 - i * 0.08) for i in range(depth_levels)]
+
+            # Create orderbook
+            orderbook = {
+                'bid_prices': bid_prices,
+                'bid_volumes': volumes,
+                'ask_prices': ask_prices,
+                'ask_volumes': volumes[::-1]  # Reverse volumes for asks
+            }
 
             data[etf] = {
-                'info': info,
-                'history': history
+                'history': history,
+                'orderbook': orderbook
             }
 
             # Store valid data in database
