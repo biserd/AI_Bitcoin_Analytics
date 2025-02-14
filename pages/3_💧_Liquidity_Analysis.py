@@ -32,110 +32,117 @@ time_period = st.selectbox(
 )
 
 if etf_data and not onchain_data.empty:
-    # Calculate start date based on selected period
-    end_date = datetime.now()
-    start_date = end_date - time_periods[time_period]
+    try:
+        # Calculate start date based on selected period
+        end_date = datetime.now()
+        start_date = end_date - time_periods[time_period]
+        # Convert to timezone-naive datetime
+        start_date = pd.to_datetime(start_date).tz_localize(None)
 
-    # Filter data based on selected time period
-    filtered_etf_data = {}
-    volume_data = []
+        # Filter data based on selected time period
+        filtered_etf_data = {}
+        volume_data = []
 
-    for etf_name, etf_info in etf_data.items():
-        if 'history' in etf_info and not etf_info['history'].empty:
-            # Convert index to datetime if needed and filter
-            history = etf_info['history'].copy()
-            history.index = pd.to_datetime(history.index)
-            filtered_history = history[history.index >= start_date]
+        for etf_name, etf_info in etf_data.items():
+            if 'history' in etf_info and not etf_info['history'].empty:
+                # Convert index to timezone-naive datetime
+                history = etf_info['history'].copy()
+                history.index = pd.to_datetime(history.index).tz_localize(None)
+                filtered_history = history[history.index >= start_date]
 
-            if not filtered_history.empty:
-                volume_data.append({
-                    'ETF': etf_name,
-                    'Volume': filtered_history['Volume'].mean(),
-                    'Total Volume': filtered_history['Volume'].sum()
-                })
+                if not filtered_history.empty:
+                    volume_data.append({
+                        'ETF': etf_name,
+                        'Volume': filtered_history['Volume'].mean(),
+                        'Total Volume': filtered_history['Volume'].sum()
+                    })
 
-                filtered_etf_data[etf_name] = {
-                    'history': filtered_history,
-                    'orderbook': etf_info.get('orderbook', {})
-                }
+                    filtered_etf_data[etf_name] = {
+                        'history': filtered_history,
+                        'orderbook': etf_info.get('orderbook', {})
+                    }
 
-    if volume_data:
-        # Volume comparison chart
-        st.subheader("Trading Volume Comparison")
-        volume_df = pd.DataFrame(volume_data)
-        fig = px.bar(
-            volume_df,
-            x='ETF',
-            y='Volume',
-            title=f"Average Daily Trading Volume ({time_period})"
-        )
-        fig.update_layout(
-            yaxis_title="Volume",
-            xaxis_title="ETF",
-            height=400,
-            margin=dict(l=40, r=40, t=60, b=40)
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-        # Liquidity metrics
-        st.subheader("Liquidity Metrics")
-        col1, col2 = st.columns(2)
-
-        with col1:
-            # Market depth chart
-            depth_fig = go.Figure()
-            for etf_name, etf_info in filtered_etf_data.items():
-                if 'orderbook' in etf_info:
-                    depth_fig.add_trace(go.Scatter(
-                        name=f"{etf_name} Bids",
-                        x=etf_info['orderbook'].get('bid_prices', []),
-                        y=etf_info['orderbook'].get('bid_volumes', []),
-                        fill='tozeroy'
-                    ))
-                    depth_fig.add_trace(go.Scatter(
-                        name=f"{etf_name} Asks",
-                        x=etf_info['orderbook'].get('ask_prices', []),
-                        y=etf_info['orderbook'].get('ask_volumes', []),
-                        fill='tozeroy'
-                    ))
-
-            depth_fig.update_layout(
-                title=f"Market Depth ({time_period})",
-                xaxis_title="Price",
+        if volume_data:
+            # Volume comparison chart
+            st.subheader("Trading Volume Comparison")
+            volume_df = pd.DataFrame(volume_data)
+            fig = px.bar(
+                volume_df,
+                x='ETF',
+                y='Volume',
+                title=f"Average Daily Trading Volume ({time_period})"
+            )
+            fig.update_layout(
                 yaxis_title="Volume",
+                xaxis_title="ETF",
                 height=400,
                 margin=dict(l=40, r=40, t=60, b=40)
             )
-            st.plotly_chart(depth_fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True)
 
-        with col2:
-            # Bid-ask spread chart
-            spreads = []
-            for etf_name, etf_info in filtered_etf_data.items():
-                if 'orderbook' in etf_info:
-                    spread = (etf_info['orderbook'].get('ask_prices', [0])[0] - 
-                            etf_info['orderbook'].get('bid_prices', [0])[0])
-                    spreads.append({
-                        'ETF': etf_name,
-                        'Spread': spread
-                    })
+            # Liquidity metrics
+            st.subheader("Liquidity Metrics")
+            col1, col2 = st.columns(2)
 
-            if spreads:
-                spread_df = pd.DataFrame(spreads)
-                spread_fig = px.bar(
-                    spread_df,
-                    x='ETF',
-                    y='Spread',
-                    title=f"Current Bid-Ask Spreads ({time_period})"
-                )
-                spread_fig.update_layout(
-                    yaxis_title="Spread",
-                    xaxis_title="ETF",
+            with col1:
+                # Market depth chart
+                depth_fig = go.Figure()
+                for etf_name, etf_info in filtered_etf_data.items():
+                    if 'orderbook' in etf_info:
+                        depth_fig.add_trace(go.Scatter(
+                            name=f"{etf_name} Bids",
+                            x=etf_info['orderbook'].get('bid_prices', []),
+                            y=etf_info['orderbook'].get('bid_volumes', []),
+                            fill='tozeroy'
+                        ))
+                        depth_fig.add_trace(go.Scatter(
+                            name=f"{etf_name} Asks",
+                            x=etf_info['orderbook'].get('ask_prices', []),
+                            y=etf_info['orderbook'].get('ask_volumes', []),
+                            fill='tozeroy'
+                        ))
+
+                depth_fig.update_layout(
+                    title=f"Market Depth ({time_period})",
+                    xaxis_title="Price",
+                    yaxis_title="Volume",
                     height=400,
                     margin=dict(l=40, r=40, t=60, b=40)
                 )
-                st.plotly_chart(spread_fig, use_container_width=True)
+                st.plotly_chart(depth_fig, use_container_width=True)
 
+            with col2:
+                # Bid-ask spread chart
+                spreads = []
+                for etf_name, etf_info in filtered_etf_data.items():
+                    if 'orderbook' in etf_info:
+                        spread = (etf_info['orderbook'].get('ask_prices', [0])[0] - 
+                                etf_info['orderbook'].get('bid_prices', [0])[0])
+                        spreads.append({
+                            'ETF': etf_name,
+                            'Spread': spread
+                        })
+
+                if spreads:
+                    spread_df = pd.DataFrame(spreads)
+                    spread_fig = px.bar(
+                        spread_df,
+                        x='ETF',
+                        y='Spread',
+                        title=f"Current Bid-Ask Spreads ({time_period})"
+                    )
+                    spread_fig.update_layout(
+                        yaxis_title="Spread",
+                        xaxis_title="ETF",
+                        height=400,
+                        margin=dict(l=40, r=40, t=60, b=40)
+                    )
+                    st.plotly_chart(spread_fig, use_container_width=True)
+
+    except Exception as e:
+        st.error(f"An error occurred: {str(e)}")
+        if st.checkbox("Show detailed error information"):
+            st.exception(e)
 else:
     st.error("Unable to load data. Please try again later.")
 
