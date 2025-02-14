@@ -87,13 +87,14 @@ if not btc_price.empty and etf_data and not onchain_data.empty:
             st.error("ETF data is empty")
             st.stop()
 
-        # Ensure datetime index
-        onchain_data.index = pd.to_datetime(onchain_data.index)
-        first_etf_data.index = pd.to_datetime(first_etf_data.index)
+        # Convert all datetime indices to UTC and make them timezone-naive
+        onchain_data.index = pd.to_datetime(onchain_data.index).tz_localize(None)
+        first_etf_data.index = pd.to_datetime(first_etf_data.index).tz_localize(None)
+        start_date_naive = pd.to_datetime(start_date).tz_localize(None)
 
         # Filter data based on selected time period
-        filtered_onchain = onchain_data[onchain_data.index >= pd.to_datetime(start_date)]
-        filtered_etf = first_etf_data[first_etf_data.index >= pd.to_datetime(start_date)]
+        filtered_onchain = onchain_data[onchain_data.index >= start_date_naive]
+        filtered_etf = first_etf_data[first_etf_data.index >= start_date_naive]
 
         if filtered_onchain.empty or filtered_etf.empty:
             st.warning("No data available for the selected time period")
