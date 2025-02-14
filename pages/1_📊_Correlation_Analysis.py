@@ -86,12 +86,18 @@ if not btc_price.empty and etf_data and not onchain_data.empty:
         # Get ETF data
         first_etf_data = next(iter(etf_data.values()))['history'].copy()
 
-        # Debug data shapes
+        # Debug data shapes and date ranges
         if show_debug:
-            st.write("Initial Data Shapes:")
+            st.write("Debug Information:")
+            st.write(f"Time Period: {time_period}")
+            st.write(f"Start Date: {start_date_naive}")
+            st.write(f"End Date: {end_date}")
+            st.write("\nData Shapes:")
             st.write(f"On-chain Data: {onchain_data.shape}")
             st.write(f"ETF Data: {first_etf_data.shape}")
-            st.write(f"Start Date: {start_date_naive}")
+            st.write("\nDate Ranges:")
+            st.write(f"On-chain Data: {onchain_data.index.min()} to {onchain_data.index.max()}")
+            st.write(f"ETF Data: {first_etf_data.index.min()} to {first_etf_data.index.max()}")
 
         # Ensure all datetime indices are timezone-naive
         onchain_data.index = pd.to_datetime(onchain_data.index).tz_localize(None)
@@ -102,9 +108,13 @@ if not btc_price.empty and etf_data and not onchain_data.empty:
         filtered_etf = first_etf_data[first_etf_data.index >= start_date_naive].copy()
 
         if show_debug:
-            st.write("Filtered Data Shapes:")
+            st.write("\nFiltered Data:")
             st.write(f"Filtered On-chain Data: {filtered_onchain.shape}")
             st.write(f"Filtered ETF Data: {filtered_etf.shape}")
+            if not filtered_onchain.empty:
+                st.write(f"Filtered On-chain Range: {filtered_onchain.index.min()} to {filtered_onchain.index.max()}")
+            if not filtered_etf.empty:
+                st.write(f"Filtered ETF Range: {filtered_etf.index.min()} to {filtered_etf.index.max()}")
 
         # Create a merged dataset for correlation
         merged_data = pd.merge(
@@ -116,8 +126,11 @@ if not btc_price.empty and etf_data and not onchain_data.empty:
         )
 
         if show_debug:
-            st.write("Merged Data Shape:", merged_data.shape)
-            st.write("First few rows of merged data:", merged_data.head())
+            st.write("\nMerged Data:")
+            st.write(f"Merged Data Shape: {merged_data.shape}")
+            if not merged_data.empty:
+                st.write("First few rows of merged data:")
+                st.write(merged_data.head())
 
         if not merged_data.empty:
             # Create scatter plot

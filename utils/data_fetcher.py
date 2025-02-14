@@ -41,8 +41,9 @@ def fetch_etf_data():
             if not isinstance(history, pd.DataFrame) or history.empty:
                 continue
 
-            # Ensure data frequency is daily by resampling
-            history = history.resample('D').last().fillna(method='ffill')
+            # Ensure data frequency is daily and handle timezone
+            history.index = pd.to_datetime(history.index).tz_localize(None)
+            history = history.resample('D').ffill()  # Using ffill instead of deprecated fillna(method='ffill')
 
             required_columns = ['Close', 'Open', 'High', 'Low', 'Volume']
             if not all(col in history.columns for col in required_columns):
@@ -92,13 +93,28 @@ def fetch_onchain_metrics():
         # Generate sample data for the last year to match ETF data
         end_date = datetime.now()
         start_date = end_date - timedelta(days=365)
-        dates = pd.date_range(start=start_date, end=end_date, freq='D')
+        # Using business days to match market data
+        dates = pd.date_range(start=start_date, end=end_date, freq='B')
+
+        # Generate more realistic looking data with trends and some randomness
+        base_addresses = 1000000
+        base_volume = 300000
+        base_hashrate = 250
 
         data = {
             'date': dates,
-            'active_addresses': np.random.randint(800000, 1200000, size=len(dates)),
-            'transaction_volume': np.random.randint(200000, 500000, size=len(dates)),
-            'hash_rate': np.random.randint(200, 300, size=len(dates))
+            'active_addresses': [
+                base_addresses + int(np.random.normal(0, 50000) + i * 100)
+                for i in range(len(dates))
+            ],
+            'transaction_volume': [
+                base_volume + int(np.random.normal(0, 10000) + i * 50)
+                for i in range(len(dates))
+            ],
+            'hash_rate': [
+                base_hashrate + int(np.random.normal(0, 5) + i * 0.1)
+                for i in range(len(dates))
+            ]
         }
 
         df = pd.DataFrame(data)
