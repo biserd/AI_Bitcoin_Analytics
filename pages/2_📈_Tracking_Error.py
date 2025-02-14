@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import numpy as np
 from utils.data_fetcher import fetch_bitcoin_price, fetch_etf_data
 
 st.set_page_config(page_title="Tracking Error Analysis", page_icon="📈", layout="wide")
@@ -64,9 +65,21 @@ if not btc_price.empty and etf_data:
     with col3:
         # Calculate tracking error as RMSE
         tracking_errors = []
-        for etf_info in etf_data.values():
-            if 'history' in etf_info and not etf_info['history'].empty:
-                tracking_error = ((etf_info['history']['Close'] - btc_price['Close']) ** 2).mean() ** 0.5
+        for etf_name, etf_info in etf_data.items():
+            if 'history' not in etf_info or etf_info['history'].empty:
+                continue
+
+            # Align dates between BTC and ETF data
+            common_dates = etf_info['history'].index.intersection(btc_price.index)
+            if len(common_dates) == 0:
+                continue
+
+            etf_prices = etf_info['history'].loc[common_dates, 'Close']
+            btc_prices = btc_price.loc[common_dates, 'Close']
+
+            # Calculate tracking error only if we have matching data
+            if len(etf_prices) > 0:
+                tracking_error = np.sqrt(((etf_prices - btc_prices) ** 2).mean())
                 tracking_errors.append(tracking_error)
 
         if tracking_errors:
