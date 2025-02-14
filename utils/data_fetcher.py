@@ -43,14 +43,18 @@ def fetch_etf_data():
                 st.warning(f"Invalid data type for {etf}")
                 continue
                 
-            if history.empty:
-                st.warning(f"No data available for {etf}")
-                continue
+            if isinstance(history, pd.DataFrame):
+                if len(history.index) == 0:
+                    st.warning(f"No data available for {etf}")
+                    continue
 
-            required_columns = ['Close', 'Open', 'High', 'Low', 'Volume']
-            has_required = all(col in history.columns for col in required_columns)
-            if not has_required:
-                st.warning(f"Missing required price columns for {etf}")
+                required_columns = ['Close', 'Open', 'High', 'Low', 'Volume']
+                has_required = all(col in history.columns for col in required_columns)
+                if not has_required:
+                    st.warning(f"Missing required price columns for {etf}")
+                    continue
+            else:
+                st.warning(f"Invalid data type for {etf}")
                 continue
 
             # Convert any numeric columns to float
