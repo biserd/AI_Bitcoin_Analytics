@@ -8,7 +8,6 @@ from utils.database import (
     BitcoinPrice, ETFData, OnchainMetric, get_db
 )
 from sqlalchemy import func
-import logging
 
 @st.cache_data(ttl=3600)
 def fetch_bitcoin_price():
@@ -17,17 +16,13 @@ def fetch_bitcoin_price():
         btc = yf.Ticker("BTC-USD")
         history = btc.history(period="1y")
 
-        if isinstance(history, pd.DataFrame) and not history.empty:
-            try:
-                # Store in database only if we have valid data
-                store_bitcoin_price(history)
-            except Exception as db_error:
-                st.warning(f"Database storage warning: {str(db_error)}")
-                # Continue with the data even if storage fails
-            return history
-        else:
+        if isinstance(history, pd.DataFrame) and history.empty:
             st.error("No Bitcoin price data available")
             return pd.DataFrame()
+
+        # Store in database
+        store_bitcoin_price(history)
+        return history
     except Exception as e:
         st.error(f"Error fetching Bitcoin price data: {str(e)}")
         return pd.DataFrame()
@@ -43,12 +38,8 @@ def fetch_etf_data():
             ticker = yf.Ticker(etf)
             history = ticker.history(period="1y")
 
-            if not isinstance(history, pd.DataFrame) or history.empty:
+            if not isinstance(history, pd.DataFrame) or history.empty or len(history.index) == 0:
                 continue
-
-            # Ensure data frequency is daily and handle timezone
-            history.index = pd.to_datetime(history.index).tz_localize(None)
-            history = history.resample('D').ffill()
 
             required_columns = ['Close', 'Open', 'High', 'Low', 'Volume']
             if not all(col in history.columns for col in required_columns):
@@ -59,21 +50,25 @@ def fetch_etf_data():
                 if col in history.columns:
                     history[col] = history[col].astype(float)
 
-            # Generate orderbook data for visualization
+            # Generate simulated orderbook data
             current_price = history['Close'].iloc[-1]
-            spread_percentage = 0.005
+            spread_percentage = 0.005  # 0.5% spread for better visibility
             depth_levels = 10
 
+            # Generate bid and ask prices with wider spread
             bid_prices = [current_price * (1 - spread_percentage * (i + 1)) for i in range(depth_levels)]
             ask_prices = [current_price * (1 + spread_percentage * (i + 1)) for i in range(depth_levels)]
-            base_volume = history['Volume'].mean() / 50
+
+            # Generate more realistic volumes that decrease exponentially
+            base_volume = history['Volume'].mean() / 50  # Adjusted divisor for better scale
             volumes = [base_volume * np.exp(-0.3 * i) for i in range(depth_levels)]
 
+            # Create orderbook with sorted prices and volumes
             orderbook = {
-                'bid_prices': sorted(bid_prices, reverse=True),
+                'bid_prices': sorted(bid_prices, reverse=True),  # Higher to lower
                 'bid_volumes': volumes,
-                'ask_prices': sorted(ask_prices),
-                'ask_volumes': volumes[::-1]
+                'ask_prices': sorted(ask_prices),  # Lower to higher
+                'ask_volumes': volumes[::-1]  # Reverse volumes for asks
             }
 
             data[etf] = {
@@ -81,64 +76,40 @@ def fetch_etf_data():
                 'orderbook': orderbook
             }
 
-            try:
-                # Store in database only if we have valid data
-                store_etf_data(etf, data[etf])
-            except Exception as db_error:
-                st.warning(f"Database storage warning for {etf}: {str(db_error)}")
-                # Continue with the data even if storage fails
+            # Store valid data in database
+            store_etf_data(etf, data[etf])
 
         except Exception as e:
-            if "ambiguous" not in str(e).lower():
+            if "ambiguous" not in str(e).lower():  # Only show non-ambiguous errors
                 st.warning(f"Error fetching data for {etf}: {str(e)}")
             continue
+
+    if len(data) == 0:
+        st.warning("No ETF data available")
 
     return data
 
 @st.cache_data(ttl=3600)
 def fetch_onchain_metrics():
-    """Generate simulated on-chain metrics with realistic patterns"""
+    """Fetch on-chain metrics and store in database"""
     try:
-        # Generate sample data for the last year
+        # Generate sample data for the last year to match ETF data
         end_date = datetime.now()
         start_date = end_date - timedelta(days=365)
-        # Using business days to match market data
-        dates = pd.date_range(start=start_date, end=end_date, freq='B')
-
-        # Generate more realistic looking data with trends and some randomness
-        base_addresses = 1000000
-        base_volume = 300000
-        base_hashrate = 250
+        dates = pd.date_range(start=start_date, end=end_date, freq='D')
 
         data = {
             'date': dates,
-            'active_addresses': [
-                base_addresses + int(np.random.normal(0, 50000) + i * 100)
-                for i in range(len(dates))
-            ],
-            'transaction_volume': [
-                base_volume + int(np.random.normal(0, 10000) + i * 50)
-                for i in range(len(dates))
-            ],
-            'hash_rate': [
-                base_hashrate + int(np.random.normal(0, 5) + i * 0.1)
-                for i in range(len(dates))
-            ]
+            'active_addresses': np.random.randint(800000, 1200000, size=len(dates)),
+            'transaction_volume': np.random.randint(200000, 500000, size=len(dates)),
+            'hash_rate': np.random.randint(200, 300, size=len(dates))
         }
 
         df = pd.DataFrame(data)
         df.set_index('date', inplace=True)
 
-        # Ensure timezone-naive datetime index
-        df.index = pd.to_datetime(df.index).tz_localize(None)
-
-        try:
-            # Store in database only if we have valid data
-            store_onchain_metrics(df)
-        except Exception as db_error:
-            st.warning(f"Database storage warning for onchain metrics: {str(db_error)}")
-            # Continue with the data even if storage fails
-
+        # Store in database
+        store_onchain_metrics(df)
         return df
     except Exception as e:
         st.error(f"Error generating on-chain metrics: {str(e)}")
@@ -157,18 +128,12 @@ def get_historical_metrics():
         if not latest_metrics:
             return pd.DataFrame()
 
-        metrics_df = pd.DataFrame([{
+        return pd.DataFrame([{
             'date': metric.timestamp,
             'active_addresses': metric.active_addresses,
             'transaction_volume': metric.transaction_volume,
             'hash_rate': metric.hash_rate
         } for metric in latest_metrics])
-
-        if not metrics_df.empty:
-            metrics_df['date'] = pd.to_datetime(metrics_df['date']).dt.tz_localize(None)
-            metrics_df.set_index('date', inplace=True)
-
-        return metrics_df
     except Exception as e:
         st.error(f"Error retrieving historical metrics: {str(e)}")
         return pd.DataFrame()
