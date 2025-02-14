@@ -59,30 +59,36 @@ if not btc_price.empty and not onchain_data.empty:
             
             # Create price scenarios visualization
             fig = go.Figure()
-            
+
             current_price = btc_price['Close'].iloc[-1]
-            
-            # Add scenarios to plot
-            for scenario, data in scenarios.items():
+
+            # Add scenarios to plot with proper spacing
+            for i, (scenario, data) in enumerate(scenarios.items()):
                 fig.add_trace(go.Indicator(
-                    mode = "number+delta",
-                    value = data["price"],
-                    title = {"text": scenario.title()},
-                    delta = {'reference': current_price},
-                    domain = {'row': 0, 'column': 0}
+                    mode="number+delta",
+                    value=data["price"],
+                    title={"text": f"<b>{scenario.title()}</b><br><span style='font-size:0.8em'>({data['probability']*100:.0f}% probability)</span>"},
+                    delta={'reference': current_price, 'relative': True},
+                    domain={'row': 0, 'column': i}
                 ))
-            
+
+            # Update layout for better spacing
             fig.update_layout(
-                grid = {'rows': 1, 'columns': 3, 'pattern': "independent"},
-                template = {'data' : {'indicator': [{
-                    'title': {'text': "Price"},
-                    'mode' : "number+delta+gauge",
-                }]
-                }}
+                grid={'rows': 1, 'columns': 3, 'pattern': "independent"},
+                height=250,
+                margin=dict(l=40, r=40, t=30, b=30),
             )
-            
+
             st.plotly_chart(fig, use_container_width=True)
-            
+
+            # Display factors for each scenario
+            col1, col2, col3 = st.columns(3)
+            for col, (scenario, data) in zip([col1, col2, col3], scenarios.items()):
+                with col:
+                    st.markdown(f"**{scenario.title()} Scenario Factors:**")
+                    for factor in data["factors"]:
+                        st.markdown(f"• {factor}")
+
             # Trading volume analysis
             st.subheader("Trading Volume Analysis")
             st.write(analysis["trading_volume_analysis"])
