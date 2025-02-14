@@ -38,10 +38,7 @@ def fetch_etf_data():
             ticker = yf.Ticker(etf)
             history = ticker.history(period="1y")
             
-            if not isinstance(history, pd.DataFrame):
-                continue
-
-            if history.empty or len(history.index) == 0:
+            if not isinstance(history, pd.DataFrame) or history.empty or len(history.index) == 0:
                 continue
 
             required_columns = ['Close', 'Open', 'High', 'Low', 'Volume']
@@ -72,7 +69,8 @@ def fetch_etf_data():
             store_etf_data(etf, data[etf])
 
         except Exception as e:
-            st.warning(f"Error fetching data for {etf}: {str(e)}")
+            if "ambiguous" not in str(e).lower():  # Only show non-ambiguous errors
+                st.warning(f"Error fetching data for {etf}: {str(e)}")
             continue
 
     if len(data) == 0:
