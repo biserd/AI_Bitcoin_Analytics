@@ -89,26 +89,45 @@ if etf_data and not onchain_data.empty:
                 depth_fig = go.Figure()
                 for etf_name, etf_info in filtered_etf_data.items():
                     if 'orderbook' in etf_info:
+                        # Add bid side
                         depth_fig.add_trace(go.Scatter(
                             name=f"{etf_name} Bids",
                             x=etf_info['orderbook'].get('bid_prices', []),
                             y=etf_info['orderbook'].get('bid_volumes', []),
-                            fill='tozeroy'
+                            fill='tozeroy',
+                            line=dict(color='rgba(0, 255, 0, 0.5)'),
+                            fillcolor='rgba(0, 255, 0, 0.2)'
                         ))
+                        # Add ask side
                         depth_fig.add_trace(go.Scatter(
                             name=f"{etf_name} Asks",
                             x=etf_info['orderbook'].get('ask_prices', []),
                             y=etf_info['orderbook'].get('ask_volumes', []),
-                            fill='tozeroy'
+                            fill='tozeroy',
+                            line=dict(color='rgba(255, 0, 0, 0.5)'),
+                            fillcolor='rgba(255, 0, 0, 0.2)'
                         ))
 
                 depth_fig.update_layout(
-                    title=f"Market Depth ({time_period})",
-                    xaxis_title="Price",
+                    title=dict(
+                        text=f"Market Depth ({time_period})",
+                        x=0.5,
+                        xanchor='center'
+                    ),
+                    xaxis_title="Price (USD)",
                     yaxis_title="Volume",
                     height=400,
-                    margin=dict(l=40, r=40, t=60, b=40)
+                    margin=dict(l=40, r=40, t=60, b=40),
+                    showlegend=True,
+                    legend=dict(
+                        yanchor="top",
+                        y=0.99,
+                        xanchor="left",
+                        x=0.01
+                    ),
+                    hovermode='x unified'
                 )
+
                 st.plotly_chart(depth_fig, use_container_width=True)
 
             with col2:
@@ -116,8 +135,8 @@ if etf_data and not onchain_data.empty:
                 spreads = []
                 for etf_name, etf_info in filtered_etf_data.items():
                     if 'orderbook' in etf_info:
-                        spread = (etf_info['orderbook'].get('ask_prices', [0])[0] - 
-                                etf_info['orderbook'].get('bid_prices', [0])[0])
+                        spread = (etf_info['orderbook'].get('ask_prices', [0])[0] -
+                                 etf_info['orderbook'].get('bid_prices', [0])[0])
                         spreads.append({
                             'ETF': etf_name,
                             'Spread': spread

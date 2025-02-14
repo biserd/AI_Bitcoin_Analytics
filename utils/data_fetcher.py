@@ -52,22 +52,22 @@ def fetch_etf_data():
 
             # Generate simulated orderbook data
             current_price = history['Close'].iloc[-1]
-            spread_percentage = 0.001  # 0.1% spread
+            spread_percentage = 0.005  # 0.5% spread for better visibility
             depth_levels = 10
 
-            # Generate bid and ask prices around the current price
+            # Generate bid and ask prices with wider spread
             bid_prices = [current_price * (1 - spread_percentage * (i + 1)) for i in range(depth_levels)]
             ask_prices = [current_price * (1 + spread_percentage * (i + 1)) for i in range(depth_levels)]
 
-            # Generate volumes that decrease as price moves away from current price
-            base_volume = history['Volume'].mean() / 100
-            volumes = [base_volume * (1 - i * 0.08) for i in range(depth_levels)]
+            # Generate more realistic volumes that decrease exponentially
+            base_volume = history['Volume'].mean() / 50  # Adjusted divisor for better scale
+            volumes = [base_volume * np.exp(-0.3 * i) for i in range(depth_levels)]
 
-            # Create orderbook
+            # Create orderbook with sorted prices and volumes
             orderbook = {
-                'bid_prices': bid_prices,
+                'bid_prices': sorted(bid_prices, reverse=True),  # Higher to lower
                 'bid_volumes': volumes,
-                'ask_prices': ask_prices,
+                'ask_prices': sorted(ask_prices),  # Lower to higher
                 'ask_volumes': volumes[::-1]  # Reverse volumes for asks
             }
 
