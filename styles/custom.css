@@ -5,6 +5,7 @@
 .stApp {
     font-family: 'Roboto', sans-serif;
     background-color: #f8f9fa;
+    color: #2c3e50;
 }
 
 /* Card styles */
@@ -14,6 +15,7 @@
     border-radius: 0.5rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin: 0.5rem 0;
+    color: #2c3e50;
 }
 
 /* Color styles */
@@ -34,6 +36,7 @@
     border-radius: 0.5rem;
     margin: 1.25rem 0;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    color: #2c3e50;
 }
 
 /* Tab styles */
@@ -46,5 +49,29 @@ div.stTabs {
 
 /* Ensure proper text contrast */
 .stMarkdown, .stText {
+    color: #2c3e50 !important;
+}
+
+/* Streamlit specific overrides */
+.streamlit-expanderHeader, 
+.stSelectbox label,
+.stMultiSelect label {
+    color: #2c3e50 !important;
+}
+
+/* Dropdown menu styles */
+.stSelectbox div[data-baseweb="select"] span,
+.stMultiSelect div[data-baseweb="select"] span {
     color: #2c3e50;
+}
+
+/* Make sure buttons have proper contrast */
+.stButton button {
+    color: #ffffff;
+    background-color: #0066cc;
+}
+
+/* Sidebar text */
+.css-1d391kg, .css-1p05t8e {
+    color: #2c3e50 !important;
 }
