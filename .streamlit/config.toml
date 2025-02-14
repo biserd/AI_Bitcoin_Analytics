@@ -1,11 +1,20 @@
-[server]
-headless = true
-address = "0.0.0.0"
-port = 5000
 
 [theme]
-primaryColor = "#F7931A"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#1D2330"
-textColor = "#333333"
-font = "sans serif"
+primaryColor = "#0066cc"
+backgroundColor = "#f8f9fa"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#2c3e50"
+
+[client]
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false
+
+[server]
+headless = true
+enableCORS = false
+
+# Load custom CSS
+[ui]
+customCss = "styles/custom.css"

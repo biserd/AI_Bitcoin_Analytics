@@ -2,6 +2,46 @@
 /* Import fonts */
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@400;500;700&display=swap');
 
+/* Global styles */
+.stApp > header {
+    background-color: transparent !important;
+}
+
+.main .block-container {
+    padding-top: 2rem;
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background-color: #ffffff !important;
+    border-right: 1px solid #e9ecef;
+}
+
+section[data-testid="stSidebar"] .block-container {
+    padding-top: 2rem;
+}
+
+/* Main elements */
+.st-emotion-cache-18ni7ap,
+.st-emotion-cache-1cypcdb,
+.st-emotion-cache-1avcm0n,
+.st-emotion-cache-1egp75f,
+.st-emotion-cache-z5fcl4 {
+    background-color: #ffffff !important;
+    color: #2c3e50 !important;
+}
+
+/* Links and text */
+.st-emotion-cache-pkbazv,
+.st-emotion-cache-16idsys {
+    color: #2c3e50 !important;
+}
+
+/* Metrics and KPIs */
+[data-testid="stMetricValue"] {
+    color: #2c3e50 !important;
+}
+
 /* Global Streamlit overrides */
 .stApp {
     background-color: #f8f9fa !important;

@@ -13,9 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Load custom CSS
-with open('styles/custom.css') as f:
-    st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+# CSS is now loaded via config.toml
 
 # Header
 st.title("Bitcoin Analytics Dashboard")
