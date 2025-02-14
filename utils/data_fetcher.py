@@ -39,12 +39,6 @@ def fetch_etf_data():
             # Changed from 1mo to 1y to match onchain data timeframe
             history = ticker.history(period="1y")
             
-            # Debug logging
-            st.write(f"Debug: {etf} history type:", type(history))
-            if isinstance(history, pd.DataFrame):
-                st.write(f"Debug: {etf} columns:", history.columns.tolist())
-                st.write(f"Debug: {etf} shape:", history.shape)
-            
             if not isinstance(history, pd.DataFrame):
                 st.warning(f"Invalid data type for {etf}")
                 continue
