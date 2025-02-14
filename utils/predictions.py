@@ -1,66 +1,89 @@
-import os
-from openai import OpenAI
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import streamlit as st
 
-# the newest OpenAI model is "gpt-4o" which was released May 13, 2024
-# do not change this unless explicitly requested by the user
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-
 def analyze_market_trends(price_data, onchain_data):
     """
-    Analyze market trends using GPT-4o to generate insights and predictions
+    Analyze market trends using technical indicators and historical patterns
     """
-    # Prepare recent market data summary
-    recent_price_change = ((price_data['Close'].iloc[-1] - price_data['Close'].iloc[-7]) / 
-                          price_data['Close'].iloc[-7] * 100)
-    
-    avg_volume = price_data['Volume'].tail(7).mean()
-    price_volatility = price_data['Close'].tail(30).std()
-    
-    # Prepare on-chain metrics summary
-    recent_active_addresses = onchain_data['active_addresses'].tail(7).mean()
-    recent_transaction_volume = onchain_data['transaction_volume'].tail(7).mean()
-    
-    # Create prompt for GPT-4o
-    prompt = f"""Analyze the following Bitcoin market data and provide insights:
-    - 7-day price change: {recent_price_change:.2f}%
-    - 7-day average trading volume: ${avg_volume:,.0f}
-    - 30-day price volatility: ${price_volatility:.2f}
-    - 7-day average active addresses: {recent_active_addresses:,.0f}
-    - 7-day average transaction volume: ${recent_transaction_volume:,.0f}
-
-    Provide market analysis in JSON format with the following structure:
-    {{
-        "market_sentiment": "bullish/bearish/neutral",
-        "confidence_score": 0.0-1.0,
-        "key_factors": ["factor1", "factor2", "factor3"],
-        "short_term_outlook": "detailed analysis for 7-day outlook",
-        "medium_term_outlook": "detailed analysis for 30-day outlook",
-        "risk_factors": ["risk1", "risk2"],
-        "trading_volume_analysis": "analysis of trading volumes",
-        "prediction": {{
-            "price_direction": "up/down/sideways",
-            "confidence": 0.0-1.0,
-            "supporting_metrics": ["metric1", "metric2"]
-        }}
-    }}
-    """
-    
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "You are a cryptocurrency market analyst expert."},
-                {"role": "user", "content": prompt}
+        # Calculate recent price changes
+        recent_price_change = ((price_data['Close'].iloc[-1] - price_data['Close'].iloc[-7]) / 
+                             price_data['Close'].iloc[-7] * 100)
+
+        # Calculate volatility
+        volatility = price_data['Close'].pct_change().std() * 100
+
+        # Calculate volume trends
+        avg_volume = price_data['Volume'].tail(7).mean()
+        volume_change = ((price_data['Volume'].iloc[-1] - price_data['Volume'].iloc[-7]) /
+                        price_data['Volume'].iloc[-7] * 100)
+
+        # Analyze on-chain metrics
+        active_addresses_change = ((onchain_data['active_addresses'].iloc[-1] - 
+                                  onchain_data['active_addresses'].iloc[-7]) /
+                                 onchain_data['active_addresses'].iloc[-7] * 100)
+
+        # Determine market sentiment
+        sentiment_factors = [
+            recent_price_change > 0,  # Price trending up
+            volume_change > 0,        # Volume trending up
+            active_addresses_change > 0  # Network activity increasing
+        ]
+
+        bullish_factors = sum(sentiment_factors)
+
+        if bullish_factors >= 2:
+            sentiment = "bullish"
+            confidence = min(0.5 + (bullish_factors - 2) * 0.25 + abs(recent_price_change) * 0.01, 0.95)
+        elif bullish_factors <= 1:
+            sentiment = "bearish"
+            confidence = min(0.5 + (1 - bullish_factors) * 0.25 + abs(recent_price_change) * 0.01, 0.95)
+        else:
+            sentiment = "neutral"
+            confidence = 0.5
+
+        # Generate analysis
+        analysis = {
+            "market_sentiment": sentiment,
+            "confidence_score": confidence,
+            "key_factors": [
+                f"Price {'increased' if recent_price_change > 0 else 'decreased'} by {abs(recent_price_change):.1f}%",
+                f"Trading volume {'increased' if volume_change > 0 else 'decreased'} by {abs(volume_change):.1f}%",
+                f"Network activity {'increased' if active_addresses_change > 0 else 'decreased'} by {abs(active_addresses_change):.1f}%"
             ],
-            response_format={"type": "json_object"}
-        )
-        
-        analysis = response.choices[0].message.content
+            "short_term_outlook": (
+                f"Market showing {'strength' if sentiment == 'bullish' else 'weakness' if sentiment == 'bearish' else 'stability'} "
+                f"with {volatility:.1f}% volatility. "
+                f"Volume trends suggest {'increasing' if volume_change > 0 else 'decreasing'} market participation."
+            ),
+            "medium_term_outlook": (
+                f"Network fundamentals are {'improving' if active_addresses_change > 0 else 'declining'}, "
+                f"suggesting potential for {'continued' if sentiment == 'bullish' else 'reversal in'} current trend."
+            ),
+            "risk_factors": [
+                f"High market volatility ({volatility:.1f}%)" if volatility > 20 else "Stable market conditions",
+                "Decreasing network activity" if active_addresses_change < 0 else "Healthy network growth",
+                "Low trading volume" if volume_change < 0 else "Strong trading volume"
+            ],
+            "trading_volume_analysis": (
+                f"Average 7-day trading volume: ${avg_volume:,.0f}. "
+                f"Volume is {volume_change:+.1f}% compared to last week."
+            ),
+            "prediction": {
+                "price_direction": "up" if sentiment == "bullish" else "down" if sentiment == "bearish" else "sideways",
+                "confidence": confidence,
+                "supporting_metrics": [
+                    "Price momentum",
+                    "Volume trend",
+                    "Network activity"
+                ]
+            }
+        }
+
         return analysis
+
     except Exception as e:
         st.error(f"Error generating market analysis: {str(e)}")
         return None
@@ -70,28 +93,44 @@ def generate_price_scenarios(price_data):
     """
     Generate potential price scenarios based on historical patterns
     """
-    current_price = price_data['Close'].iloc[-1]
-    
-    # Calculate historical volatility
-    volatility = price_data['Close'].pct_change().std()
-    
-    # Generate scenarios
-    scenarios = {
-        "bullish": {
-            "price": current_price * (1 + volatility * 2),
-            "probability": 0.0,  # Will be set by AI
-            "factors": []
-        },
-        "neutral": {
-            "price": current_price * (1 + volatility * 0.5),
-            "probability": 0.0,
-            "factors": []
-        },
-        "bearish": {
-            "price": current_price * (1 - volatility * 1.5),
-            "probability": 0.0,
-            "factors": []
+    try:
+        current_price = price_data['Close'].iloc[-1]
+
+        # Calculate historical volatility
+        volatility = price_data['Close'].pct_change().std()
+
+        # Generate scenarios
+        scenarios = {
+            "bullish": {
+                "price": current_price * (1 + volatility * 2),
+                "probability": 0.3,
+                "factors": [
+                    "Strong network growth",
+                    "Increasing trading volume",
+                    "Positive price momentum"
+                ]
+            },
+            "neutral": {
+                "price": current_price * (1 + volatility * 0.5),
+                "probability": 0.4,
+                "factors": [
+                    "Stable network metrics",
+                    "Average trading volume",
+                    "Sideways price action"
+                ]
+            },
+            "bearish": {
+                "price": current_price * (1 - volatility * 1.5),
+                "probability": 0.3,
+                "factors": [
+                    "Decreasing network activity",
+                    "Lower trading volume",
+                    "Negative price momentum"
+                ]
+            }
         }
-    }
-    
-    return scenarios
+
+        return scenarios
+    except Exception as e:
+        st.error(f"Error generating price scenarios: {str(e)}")
+        return None
