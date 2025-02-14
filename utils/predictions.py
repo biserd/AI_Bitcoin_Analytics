@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import streamlit as st
+import json
 
 def analyze_market_trends(price_data, onchain_data):
     """
@@ -82,7 +83,8 @@ def analyze_market_trends(price_data, onchain_data):
             }
         }
 
-        return analysis
+        # Convert the analysis dictionary to a JSON string before returning
+        return json.dumps(analysis)
 
     except Exception as e:
         st.error(f"Error generating market analysis: {str(e)}")
