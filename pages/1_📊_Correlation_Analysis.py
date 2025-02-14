@@ -9,11 +9,32 @@ st.set_page_config(page_title="Correlation Analysis", page_icon="📊", layout="
 st.title("Correlation Analysis")
 st.markdown("Analyze relationships between on-chain metrics and ETF performance")
 
-# Load data
-with st.spinner('Fetching data...'):
-    btc_price = fetch_bitcoin_price()
-    etf_data = fetch_etf_data()
-    onchain_data = fetch_onchain_metrics()
+# Clear cache if time period changes
+if 'last_time_period' not in st.session_state:
+    st.session_state.last_time_period = None
+
+# Time period selector (placed before data loading to trigger refresh)
+time_period = st.selectbox(
+    "Select Time Period",
+    ["1 Week", "1 Month", "3 Months", "6 Months", "1 Year", "All Time"],
+    index=2
+)
+
+# Clear cache if time period changes
+if st.session_state.last_time_period != time_period:
+    st.session_state.last_time_period = time_period
+    st.cache_data.clear()
+
+# Load data with proper caching
+@st.cache_data(ttl=3600)  # Cache for 1 hour
+def load_all_data():
+    with st.spinner('Fetching data...'):
+        btc_price = fetch_bitcoin_price()
+        etf_data = fetch_etf_data()
+        onchain_data = fetch_onchain_metrics()
+        return btc_price, etf_data, onchain_data
+
+btc_price, etf_data, onchain_data = load_all_data()
 
 # Debug information
 if st.checkbox("Show Debug Information"):
@@ -23,13 +44,6 @@ if st.checkbox("Show Debug Information"):
     if etf_data:
         first_etf = next(iter(etf_data.values()))
         st.write(f"ETF Data: {first_etf['history'].shape if 'history' in first_etf else 'Empty'}")
-
-# Time period selector
-time_period = st.selectbox(
-    "Select Time Period",
-    ["1 Week", "1 Month", "3 Months", "6 Months", "1 Year", "All Time"],
-    index=2
-)
 
 # Convert time period to timedelta
 period_mapping = {
@@ -81,7 +95,7 @@ if not btc_price.empty and etf_data and not onchain_data.empty:
             st.error("No ETF data available")
             st.stop()
 
-        first_etf_data = next(iter(etf_data.values()))['history']
+        first_etf_data = next(iter(etf_data.values()))['history'].copy()  # Create a copy to avoid modification warnings
 
         if first_etf_data.empty:
             st.error("ETF data is empty")
@@ -92,9 +106,19 @@ if not btc_price.empty and etf_data and not onchain_data.empty:
         first_etf_data.index = pd.to_datetime(first_etf_data.index).tz_localize(None)
         start_date_naive = pd.to_datetime(start_date).tz_localize(None)
 
+        # Debug time period filtering
+        st.write("Debug: Time Period")
+        st.write(f"Start Date: {start_date_naive}")
+        st.write(f"End Date: {end_date}")
+
         # Filter data based on selected time period
-        filtered_onchain = onchain_data[onchain_data.index >= start_date_naive]
-        filtered_etf = first_etf_data[first_etf_data.index >= start_date_naive]
+        filtered_onchain = onchain_data[onchain_data.index >= start_date_naive].copy()
+        filtered_etf = first_etf_data[first_etf_data.index >= start_date_naive].copy()
+
+        # Debug filtered data
+        st.write("Debug: Filtered Data Shapes")
+        st.write(f"Filtered Onchain Data: {filtered_onchain.shape}")
+        st.write(f"Filtered ETF Data: {filtered_etf.shape}")
 
         if filtered_onchain.empty or filtered_etf.empty:
             st.warning("No data available for the selected time period")
@@ -112,6 +136,10 @@ if not btc_price.empty and etf_data and not onchain_data.empty:
         if merged_data.empty:
             st.warning("No overlapping data points found for correlation analysis")
             st.stop()
+
+        # Debug merged data
+        st.write("Debug: Merged Data")
+        st.write(f"Merged Data Shape: {merged_data.shape}")
 
         # Check for numeric data
         if not merged_data[onchain_column_mapping[onchain_metric]].dtype.kind in 'iufc' or \
