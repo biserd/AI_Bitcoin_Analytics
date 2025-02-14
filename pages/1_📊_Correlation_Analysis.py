@@ -13,7 +13,7 @@ st.markdown("Analyze relationships between on-chain metrics and ETF performance"
 if 'last_time_period' not in st.session_state:
     st.session_state.last_time_period = None
 
-# Time period selector (placed before data loading to trigger refresh)
+# Time period selector
 time_period = st.selectbox(
     "Select Time Period",
     ["1 Week", "1 Month", "3 Months", "6 Months", "1 Year", "All Time"],
@@ -36,28 +36,8 @@ def load_all_data():
 
 btc_price, etf_data, onchain_data = load_all_data()
 
-# Debug information
-if st.checkbox("Show Debug Information"):
-    st.write("Data Shapes:")
-    st.write(f"Bitcoin Price Data: {btc_price.shape if not btc_price.empty else 'Empty'}")
-    st.write(f"On-chain Data: {onchain_data.shape if not onchain_data.empty else 'Empty'}")
-    if etf_data:
-        first_etf = next(iter(etf_data.values()))
-        st.write(f"ETF Data: {first_etf['history'].shape if 'history' in first_etf else 'Empty'}")
-
-# Convert time period to timedelta
-period_mapping = {
-    "1 Week": timedelta(days=7),
-    "1 Month": timedelta(days=30),
-    "3 Months": timedelta(days=90),
-    "6 Months": timedelta(days=180),
-    "1 Year": timedelta(days=365),
-    "All Time": timedelta(days=3650)
-}
-
-# Calculate the start date based on selected period
-end_date = datetime.now()
-start_date = end_date - period_mapping[time_period]
+# Debug information toggle
+show_debug = st.checkbox("Show Debug Information", value=False)
 
 # Metric selectors
 col1, col2 = st.columns(2)
@@ -85,44 +65,46 @@ etf_column_mapping = {
     "Volume": "Volume"
 }
 
+# Convert time period to timedelta
+period_mapping = {
+    "1 Week": timedelta(days=7),
+    "1 Month": timedelta(days=30),
+    "3 Months": timedelta(days=90),
+    "6 Months": timedelta(days=180),
+    "1 Year": timedelta(days=365),
+    "All Time": timedelta(days=3650)
+}
+
 # Display correlation analysis
 if not btc_price.empty and etf_data and not onchain_data.empty:
-    st.subheader(f"Correlation: {onchain_metric} vs {etf_metric}")
-
     try:
-        # Get the selected ETF data
-        if not etf_data:
-            st.error("No ETF data available")
-            st.stop()
-
-        first_etf_data = next(iter(etf_data.values()))['history'].copy()  # Create a copy to avoid modification warnings
-
-        if first_etf_data.empty:
-            st.error("ETF data is empty")
-            st.stop()
-
-        # Convert all datetime indices to UTC and make them timezone-naive
-        onchain_data.index = pd.to_datetime(onchain_data.index).tz_localize(None)
-        first_etf_data.index = pd.to_datetime(first_etf_data.index).tz_localize(None)
+        # Calculate the start date based on selected period
+        end_date = datetime.now()
+        start_date = end_date - period_mapping[time_period]
         start_date_naive = pd.to_datetime(start_date).tz_localize(None)
 
-        # Debug time period filtering
-        st.write("Debug: Time Period")
-        st.write(f"Start Date: {start_date_naive}")
-        st.write(f"End Date: {end_date}")
+        # Get ETF data
+        first_etf_data = next(iter(etf_data.values()))['history'].copy()
+
+        # Debug data shapes
+        if show_debug:
+            st.write("Initial Data Shapes:")
+            st.write(f"On-chain Data: {onchain_data.shape}")
+            st.write(f"ETF Data: {first_etf_data.shape}")
+            st.write(f"Start Date: {start_date_naive}")
+
+        # Ensure all datetime indices are timezone-naive
+        onchain_data.index = pd.to_datetime(onchain_data.index).tz_localize(None)
+        first_etf_data.index = pd.to_datetime(first_etf_data.index).tz_localize(None)
 
         # Filter data based on selected time period
         filtered_onchain = onchain_data[onchain_data.index >= start_date_naive].copy()
         filtered_etf = first_etf_data[first_etf_data.index >= start_date_naive].copy()
 
-        # Debug filtered data
-        st.write("Debug: Filtered Data Shapes")
-        st.write(f"Filtered Onchain Data: {filtered_onchain.shape}")
-        st.write(f"Filtered ETF Data: {filtered_etf.shape}")
-
-        if filtered_onchain.empty or filtered_etf.empty:
-            st.warning("No data available for the selected time period")
-            st.stop()
+        if show_debug:
+            st.write("Filtered Data Shapes:")
+            st.write(f"Filtered On-chain Data: {filtered_onchain.shape}")
+            st.write(f"Filtered ETF Data: {filtered_etf.shape}")
 
         # Create a merged dataset for correlation
         merged_data = pd.merge(
@@ -133,62 +115,55 @@ if not btc_price.empty and etf_data and not onchain_data.empty:
             how='inner'
         )
 
-        if merged_data.empty:
-            st.warning("No overlapping data points found for correlation analysis")
-            st.stop()
+        if show_debug:
+            st.write("Merged Data Shape:", merged_data.shape)
+            st.write("First few rows of merged data:", merged_data.head())
 
-        # Debug merged data
-        st.write("Debug: Merged Data")
-        st.write(f"Merged Data Shape: {merged_data.shape}")
+        if not merged_data.empty:
+            # Create scatter plot
+            fig = px.scatter(
+                merged_data,
+                x=onchain_column_mapping[onchain_metric],
+                y=etf_column_mapping[etf_metric],
+                title=f"{onchain_metric} vs {etf_metric} Correlation"
+            )
 
-        # Check for numeric data
-        if not merged_data[onchain_column_mapping[onchain_metric]].dtype.kind in 'iufc' or \
-           not merged_data[etf_column_mapping[etf_metric]].dtype.kind in 'iufc':
-            st.error("Selected metrics contain non-numeric data")
-            st.stop()
+            # Add trendline
+            fig.add_traces(px.scatter(
+                merged_data,
+                x=onchain_column_mapping[onchain_metric],
+                y=etf_column_mapping[etf_metric],
+                trendline="ols"
+            ).data)
 
-        # Create scatter plot
-        fig = px.scatter(
-            merged_data,
-            x=onchain_column_mapping[onchain_metric],
-            y=etf_column_mapping[etf_metric],
-            title=f"{onchain_metric} vs {etf_metric} Correlation"
-        )
+            st.plotly_chart(fig, use_container_width=True)
 
-        # Add trendline
-        fig.add_traces(px.scatter(
-            merged_data,
-            x=onchain_column_mapping[onchain_metric],
-            y=etf_column_mapping[etf_metric],
-            trendline="ols"
-        ).data)
+            # Calculate correlation
+            correlation = merged_data[onchain_column_mapping[onchain_metric]].corr(
+                merged_data[etf_column_mapping[etf_metric]]
+            )
 
-        st.plotly_chart(fig, use_container_width=True)
-
-        # Calculate correlation
-        correlation = merged_data[onchain_column_mapping[onchain_metric]].corr(
-            merged_data[etf_column_mapping[etf_metric]]
-        )
-
-        if pd.isna(correlation):
-            st.warning("Unable to calculate correlation coefficient")
-        else:
-            st.metric("Correlation Coefficient", f"{correlation:.2f}")
-
-            # Add correlation interpretation
-            if abs(correlation) > 0.7:
-                strength = "Strong"
-            elif abs(correlation) > 0.3:
-                strength = "Moderate"
+            if pd.isna(correlation):
+                st.warning("Unable to calculate correlation coefficient")
             else:
-                strength = "Weak"
+                st.metric("Correlation Coefficient", f"{correlation:.2f}")
 
-            direction = "positive" if correlation > 0 else "negative"
-            st.info(f"There is a {strength} {direction} correlation between {onchain_metric} and {etf_metric}.")
+                # Add correlation interpretation
+                if abs(correlation) > 0.7:
+                    strength = "Strong"
+                elif abs(correlation) > 0.3:
+                    strength = "Moderate"
+                else:
+                    strength = "Weak"
+
+                direction = "positive" if correlation > 0 else "negative"
+                st.info(f"There is a {strength} {direction} correlation between {onchain_metric} and {etf_metric}.")
+        else:
+            st.warning("No overlapping data points found in the selected time period. Try selecting a different time period or metrics.")
 
     except Exception as e:
-        st.error(f"An error occurred: {str(e)}")
-        if st.checkbox("Show detailed error information"):
+        st.error(f"An error occurred during analysis: {str(e)}")
+        if show_debug:
             st.exception(e)
 else:
     st.error("Unable to load required data. Please try again later.")

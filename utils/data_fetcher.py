@@ -38,8 +38,11 @@ def fetch_etf_data():
             ticker = yf.Ticker(etf)
             history = ticker.history(period="1y")
 
-            if not isinstance(history, pd.DataFrame) or history.empty or len(history.index) == 0:
+            if not isinstance(history, pd.DataFrame) or history.empty:
                 continue
+
+            # Ensure data frequency is daily by resampling
+            history = history.resample('D').last().fillna(method='ffill')
 
             required_columns = ['Close', 'Open', 'High', 'Low', 'Volume']
             if not all(col in history.columns for col in required_columns):
@@ -55,20 +58,16 @@ def fetch_etf_data():
             spread_percentage = 0.005  # 0.5% spread for better visibility
             depth_levels = 10
 
-            # Generate bid and ask prices with wider spread
             bid_prices = [current_price * (1 - spread_percentage * (i + 1)) for i in range(depth_levels)]
             ask_prices = [current_price * (1 + spread_percentage * (i + 1)) for i in range(depth_levels)]
-
-            # Generate more realistic volumes that decrease exponentially
-            base_volume = history['Volume'].mean() / 50  # Adjusted divisor for better scale
+            base_volume = history['Volume'].mean() / 50
             volumes = [base_volume * np.exp(-0.3 * i) for i in range(depth_levels)]
 
-            # Create orderbook with sorted prices and volumes
             orderbook = {
-                'bid_prices': sorted(bid_prices, reverse=True),  # Higher to lower
+                'bid_prices': sorted(bid_prices, reverse=True),
                 'bid_volumes': volumes,
-                'ask_prices': sorted(ask_prices),  # Lower to higher
-                'ask_volumes': volumes[::-1]  # Reverse volumes for asks
+                'ask_prices': sorted(ask_prices),
+                'ask_volumes': volumes[::-1]
             }
 
             data[etf] = {
@@ -80,12 +79,9 @@ def fetch_etf_data():
             store_etf_data(etf, data[etf])
 
         except Exception as e:
-            if "ambiguous" not in str(e).lower():  # Only show non-ambiguous errors
+            if "ambiguous" not in str(e).lower():
                 st.warning(f"Error fetching data for {etf}: {str(e)}")
             continue
-
-    if len(data) == 0:
-        st.warning("No ETF data available")
 
     return data
 
@@ -108,6 +104,9 @@ def fetch_onchain_metrics():
         df = pd.DataFrame(data)
         df.set_index('date', inplace=True)
 
+        # Ensure timezone-naive datetime index
+        df.index = pd.to_datetime(df.index).tz_localize(None)
+
         # Store in database
         store_onchain_metrics(df)
         return df
@@ -128,12 +127,18 @@ def get_historical_metrics():
         if not latest_metrics:
             return pd.DataFrame()
 
-        return pd.DataFrame([{
+        metrics_df = pd.DataFrame([{
             'date': metric.timestamp,
             'active_addresses': metric.active_addresses,
             'transaction_volume': metric.transaction_volume,
             'hash_rate': metric.hash_rate
         } for metric in latest_metrics])
+
+        if not metrics_df.empty:
+            metrics_df['date'] = pd.to_datetime(metrics_df['date']).dt.tz_localize(None)
+            metrics_df.set_index('date', inplace=True)
+
+        return metrics_df
     except Exception as e:
         st.error(f"Error retrieving historical metrics: {str(e)}")
         return pd.DataFrame()
