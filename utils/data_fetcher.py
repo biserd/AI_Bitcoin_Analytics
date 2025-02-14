@@ -38,7 +38,18 @@ def fetch_etf_data():
             ticker = yf.Ticker(etf)
             # Changed from 1mo to 1y to match onchain data timeframe
             history = ticker.history(period="1y")
-            if history is None or history.empty:
+            
+            # Debug logging
+            st.write(f"Debug: {etf} history type:", type(history))
+            if isinstance(history, pd.DataFrame):
+                st.write(f"Debug: {etf} columns:", history.columns.tolist())
+                st.write(f"Debug: {etf} shape:", history.shape)
+            
+            if not isinstance(history, pd.DataFrame):
+                st.warning(f"Invalid data type for {etf}")
+                continue
+                
+            if history.empty:
                 st.warning(f"No data available for {etf}")
                 continue
 
