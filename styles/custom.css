@@ -8,6 +8,24 @@
     color: #2c3e50;
 }
 
+/* Fix sidebar and navigation styles */
+.st-emotion-cache-1q1n0ol {
+    background-color: #f1f3f6 !important;
+}
+
+.st-emotion-cache-16idsys p,
+.st-emotion-cache-16idsys span,
+.st-emotion-cache-16idsys a,
+.st-emotion-cache-16idsys div {
+    color: #2c3e50 !important;
+}
+
+/* Fix dark boxes */
+.st-emotion-cache-12w0qpk {
+    background-color: #ffffff !important;
+    border: 1px solid #e1e4e8;
+}
+
 /* Card styles */
 .metric-card {
     background-color: #ffffff;
