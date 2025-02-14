@@ -2,51 +2,70 @@
 /* Import fonts */
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Roboto:wght@400;500;700&display=swap');
 
-/* Reset Streamlit theme */
+/* Global Streamlit overrides */
 .stApp {
-    background-color: #f8f9fa;
+    background-color: #f8f9fa !important;
 }
 
-/* Main content area */
-.main {
-    background-color: #ffffff;
-    color: #2c3e50 !important;
+/* Main content and containers */
+.main, 
+.css-1d391kg,
+.css-12oz5g7 {
+    background-color: #ffffff !important;
+    padding: 1rem !important;
+    border-radius: 0.5rem !important;
 }
 
-/* Sidebar */
+/* Sidebar styling */
 [data-testid="stSidebar"] {
     background-color: #ffffff !important;
+    border-right: 1px solid #e9ecef !important;
 }
 
 [data-testid="stSidebar"] [data-testid="stMarkdown"] {
     color: #2c3e50 !important;
 }
 
-/* Navigation and sidebar elements */
-.st-emotion-cache-16idsys,
-.st-emotion-cache-1cypcdb,
-.st-emotion-cache-1avcm0n,
-.st-emotion-cache-18ni7ap,
-.st-emotion-cache-1qg05tj,
-.st-emotion-cache-6qob1r,
-.st-emotion-cache-1oe5cao {
-    background-color: #ffffff !important;
+/* Headers and text */
+h1, h2, h3, h4, h5, h6 {
     color: #2c3e50 !important;
+    font-family: 'Roboto', sans-serif !important;
+    font-weight: 500 !important;
 }
 
-/* Inputs and selectors */
-.stSelectbox,
-.stMultiSelect {
+p, span, label, div {
     color: #2c3e50 !important;
+    font-family: 'Open Sans', sans-serif !important;
 }
 
-[data-baseweb="select"] {
-    background-color: #ffffff !important;
+/* Metrics and cards */
+[data-testid="stMetricValue"] {
+    color: #2c3e50 !important;
+    font-size: 2rem !important;
+    font-weight: 600 !important;
 }
 
-[data-baseweb="select"] > div {
+[data-testid="stMetricDelta"] {
+    font-size: 1rem !important;
+}
+
+/* Charts and plots */
+[data-testid="stArrowVegaLiteChart"],
+.user-select-none.svg-container {
+    background-color: #ffffff !important;
+    border-radius: 0.5rem !important;
+    padding: 1rem !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+}
+
+/* Select boxes and inputs */
+.stSelectbox select,
+.stTextInput input,
+.stNumberInput input {
     background-color: #ffffff !important;
     color: #2c3e50 !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 0.25rem !important;
 }
 
 /* Buttons */
@@ -56,44 +75,19 @@
     border: none !important;
     padding: 0.5rem 1rem !important;
     border-radius: 0.25rem !important;
+    font-weight: 500 !important;
 }
 
-/* Cards and containers */
-.element-container,
-.stMarkdown,
-.css-1544g2n {
-    background-color: #ffffff !important;
+/* Tabs */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 1rem !important;
+    background-color: transparent !important;
+}
+
+.stTabs [data-baseweb="tab"] {
     color: #2c3e50 !important;
-}
-
-/* Expanders */
-.streamlit-expanderHeader {
-    background-color: #ffffff !important;
-    color: #2c3e50 !important;
-}
-
-/* All text elements */
-p, h1, h2, h3, h4, h5, h6, span, label {
-    color: #2c3e50 !important;
-}
-
-/* Radio buttons */
-.st-emotion-cache-1x8tf20 {
-    color: #2c3e50 !important;
-}
-
-/* Metrics and KPIs */
-.metric-card {
-    background-color: #ffffff;
-    padding: 1.25rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin: 0.5rem 0;
-}
-
-/* Charts and visualizations */
-[data-testid="stArrowVegaLiteChart"] {
-    background-color: #ffffff !important;
+    border-radius: 0.25rem !important;
+    padding: 0.5rem 1rem !important;
 }
 
 /* Tables */
@@ -101,23 +95,44 @@ p, h1, h2, h3, h4, h5, h6, span, label {
     background-color: #ffffff !important;
 }
 
-.stDataFrame [data-testid="stTable"] {
-    background-color: #ffffff !important;
-    color: #2c3e50 !important;
+.stDataFrame table {
+    border-radius: 0.5rem !important;
+    overflow: hidden !important;
 }
 
-/* Alerts and notifications */
+/* Alert boxes */
 .stAlert {
     background-color: #ffffff !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 0.5rem !important;
+}
+
+/* Progress and loading indicators */
+.stProgress .progress {
+    background-color: #e9ecef !important;
+}
+
+.stProgress .progress-bar {
+    background-color: #0066cc !important;
+}
+
+/* Custom classes */
+.metric-card {
+    background-color: #ffffff !important;
+    padding: 1.25rem !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    margin: 0.5rem 0 !important;
+}
+
+/* Dark elements fix */
+.st-emotion-cache-16idsys,
+.st-emotion-cache-1cypcdb,
+.st-emotion-cache-1avcm0n,
+.st-emotion-cache-18ni7ap,
+.st-emotion-cache-1qg05tj,
+.st-emotion-cache-6qob1r,
+.st-emotion-cache-1oe5cao {
+    background-color: #ffffff !important;
     color: #2c3e50 !important;
-}
-
-/* Links */
-a {
-    color: #0066cc !important;
-    text-decoration: none !important;
-}
-
-a:hover {
-    text-decoration: underline !important;
 }
