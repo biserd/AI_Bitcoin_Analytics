@@ -23,7 +23,7 @@ time_period = st.selectbox(
 if not btc_price.empty and etf_data:
     # Calculate tracking error
     st.subheader("ETF Tracking Error")
-    
+
     # Create comparison chart
     fig = px.line(
         btc_price,
@@ -31,7 +31,7 @@ if not btc_price.empty and etf_data:
         y="Close",
         title="Bitcoin Price vs ETF Performance"
     )
-    
+
     # Add ETF price lines
     for etf_name, etf_info in etf_data.items():
         if 'history' in etf_info and not etf_info['history'].empty:
@@ -40,16 +40,16 @@ if not btc_price.empty and etf_data:
                 y=etf_info['history']['Close'],
                 name=etf_name
             )
-    
+
     st.plotly_chart(fig, use_container_width=True)
-    
+
     # Performance metrics
     st.subheader("Performance Metrics")
     col1, col2, col3 = st.columns(3)
-    
+
     with col1:
         st.metric("Bitcoin Volatility", f"{btc_price['Close'].std():.2f}%")
-    
+
     with col2:
         # Calculate average ETF volatility
         etf_volatilities = [
@@ -60,7 +60,7 @@ if not btc_price.empty and etf_data:
         if etf_volatilities:
             avg_etf_volatility = sum(etf_volatilities) / len(etf_volatilities)
             st.metric("Avg ETF Volatility", f"{avg_etf_volatility:.2f}%")
-    
+
     with col3:
         # Calculate tracking error as RMSE
         tracking_errors = []
@@ -68,7 +68,7 @@ if not btc_price.empty and etf_data:
             if 'history' in etf_info and not etf_info['history'].empty:
                 tracking_error = ((etf_info['history']['Close'] - btc_price['Close']) ** 2).mean() ** 0.5
                 tracking_errors.append(tracking_error)
-        
+
         if tracking_errors:
             avg_tracking_error = sum(tracking_errors) / len(tracking_errors)
             st.metric("Avg Tracking Error", f"{avg_tracking_error:.2f}%")
