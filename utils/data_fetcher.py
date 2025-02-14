@@ -8,6 +8,7 @@ from utils.database import (
     BitcoinPrice, ETFData, OnchainMetric, get_db
 )
 from sqlalchemy import func
+import logging
 
 @st.cache_data(ttl=3600)
 def fetch_bitcoin_price():
@@ -16,13 +17,17 @@ def fetch_bitcoin_price():
         btc = yf.Ticker("BTC-USD")
         history = btc.history(period="1y")
 
-        if isinstance(history, pd.DataFrame) and history.empty:
+        if isinstance(history, pd.DataFrame) and not history.empty:
+            try:
+                # Store in database only if we have valid data
+                store_bitcoin_price(history)
+            except Exception as db_error:
+                st.warning(f"Database storage warning: {str(db_error)}")
+                # Continue with the data even if storage fails
+            return history
+        else:
             st.error("No Bitcoin price data available")
             return pd.DataFrame()
-
-        # Store in database
-        store_bitcoin_price(history)
-        return history
     except Exception as e:
         st.error(f"Error fetching Bitcoin price data: {str(e)}")
         return pd.DataFrame()
@@ -43,7 +48,7 @@ def fetch_etf_data():
 
             # Ensure data frequency is daily and handle timezone
             history.index = pd.to_datetime(history.index).tz_localize(None)
-            history = history.resample('D').ffill()  # Using ffill instead of deprecated fillna(method='ffill')
+            history = history.resample('D').ffill()
 
             required_columns = ['Close', 'Open', 'High', 'Low', 'Volume']
             if not all(col in history.columns for col in required_columns):
@@ -54,9 +59,9 @@ def fetch_etf_data():
                 if col in history.columns:
                     history[col] = history[col].astype(float)
 
-            # Generate simulated orderbook data
+            # Generate orderbook data for visualization
             current_price = history['Close'].iloc[-1]
-            spread_percentage = 0.005  # 0.5% spread for better visibility
+            spread_percentage = 0.005
             depth_levels = 10
 
             bid_prices = [current_price * (1 - spread_percentage * (i + 1)) for i in range(depth_levels)]
@@ -76,8 +81,12 @@ def fetch_etf_data():
                 'orderbook': orderbook
             }
 
-            # Store valid data in database
-            store_etf_data(etf, data[etf])
+            try:
+                # Store in database only if we have valid data
+                store_etf_data(etf, data[etf])
+            except Exception as db_error:
+                st.warning(f"Database storage warning for {etf}: {str(db_error)}")
+                # Continue with the data even if storage fails
 
         except Exception as e:
             if "ambiguous" not in str(e).lower():
@@ -88,9 +97,9 @@ def fetch_etf_data():
 
 @st.cache_data(ttl=3600)
 def fetch_onchain_metrics():
-    """Fetch on-chain metrics and store in database"""
+    """Generate simulated on-chain metrics with realistic patterns"""
     try:
-        # Generate sample data for the last year to match ETF data
+        # Generate sample data for the last year
         end_date = datetime.now()
         start_date = end_date - timedelta(days=365)
         # Using business days to match market data
@@ -123,8 +132,13 @@ def fetch_onchain_metrics():
         # Ensure timezone-naive datetime index
         df.index = pd.to_datetime(df.index).tz_localize(None)
 
-        # Store in database
-        store_onchain_metrics(df)
+        try:
+            # Store in database only if we have valid data
+            store_onchain_metrics(df)
+        except Exception as db_error:
+            st.warning(f"Database storage warning for onchain metrics: {str(db_error)}")
+            # Continue with the data even if storage fails
+
         return df
     except Exception as e:
         st.error(f"Error generating on-chain metrics: {str(e)}")
