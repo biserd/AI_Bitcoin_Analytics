@@ -20,6 +20,14 @@ time_period = st.selectbox(
     index=2
 )
 
+# Debug information
+st.write("Debug: Bitcoin price data shape:", btc_price.shape if not btc_price.empty else "Empty")
+st.write("Debug: Number of ETFs:", len(etf_data) if etf_data else 0)
+for etf_name, etf_info in etf_data.items():
+    st.write(f"Debug: {etf_name} data available:", 'history' in etf_info)
+    if 'history' in etf_info:
+        st.write(f"Debug: {etf_name} history shape:", etf_info['history'].shape)
+
 if not btc_price.empty and etf_data:
     # Calculate tracking error
     st.subheader("ETF Tracking Error")
