@@ -13,8 +13,5 @@ gatherUsageStats = false
 
 [server]
 headless = true
-enableCORS = false
-
-# Load custom CSS
-[ui]
-customCss = "styles/custom.css"
+enableCORS = true
+enableXsrfProtection = true
