@@ -36,20 +36,16 @@ def fetch_etf_data():
     for etf in etfs:
         try:
             ticker = yf.Ticker(etf)
-            # Changed from 1mo to 1y to match onchain data timeframe
             history = ticker.history(period="1y")
             
             if not isinstance(history, pd.DataFrame):
-                st.warning(f"Invalid data type for {etf}")
                 continue
 
-            if len(history.index) == 0:
-                st.warning(f"No data available for {etf}")
+            if history.empty or len(history.index) == 0:
                 continue
 
             required_columns = ['Close', 'Open', 'High', 'Low', 'Volume']
             if not all(col in history.columns for col in required_columns):
-                st.warning(f"Missing required price columns for {etf}")
                 continue
 
             # Convert any numeric columns to float
