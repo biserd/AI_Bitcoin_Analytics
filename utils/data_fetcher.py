@@ -38,7 +38,7 @@ def fetch_etf_data():
             ticker = yf.Ticker(etf)
             # Changed from 1mo to 1y to match onchain data timeframe
             history = ticker.history(period="1y")
-            if history is None or len(history) == 0:
+            if history is None or history.empty:
                 st.warning(f"No data available for {etf}")
                 continue
 
