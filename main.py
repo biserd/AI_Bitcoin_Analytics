@@ -25,7 +25,7 @@ with st.sidebar:
     page = st.radio(
         "",  # Empty label for cleaner look
         ["Home", "ETF Analysis", "Market Metrics"],
-        format_func=lambda x: f"{'🏠' if x == 'Home' else '📈' if x == 'ETF Analysis' else '📊' if x == 'Market Metrics'} {x}"
+        format_func=lambda x: f"{'🏠' if x == 'Home' else '📈' if x == 'ETF Analysis' else '📊'} {x}"
     )
 
 # Load key metrics for homepage
