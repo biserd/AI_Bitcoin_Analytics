@@ -70,9 +70,52 @@ for etf, cost_info in etf_costs.items():
 df_costs = pd.DataFrame(costs_data)
 
 # Display recommendation first
+# Calculate potential returns
+returns_data = []
+btc_historical_return = btc_price['Close'].pct_change().mean() * 252  # Annualized return
+
+for investment_type in df_costs['Investment Type']:
+    if investment_type == 'Spot Bitcoin':
+        annual_return = btc_historical_return
+    else:
+        # ETF returns are slightly lower due to tracking error
+        annual_return = btc_historical_return * 0.99
+    
+    # Calculate net return after costs
+    cost_pct = df_costs.loc[df_costs['Investment Type'] == investment_type, 'Cost Percentage'].values[0]
+    net_annual_return = annual_return - (cost_pct / holding_period)
+    
+    potential_profit = investment_amount * (pow(1 + net_annual_return, holding_period) - 1)
+    returns_data.append({
+        'Investment Type': investment_type,
+        'Potential Profit': potential_profit,
+        'Net Annual Return': net_annual_return * 100
+    })
+
+df_returns = pd.DataFrame(returns_data)
+
+# Display combined recommendation
 st.subheader("Investment Recommendation")
+best_profit_option = df_returns.loc[df_returns['Potential Profit'].idxmax()]
 min_cost_option = df_costs.loc[df_costs['Cost Percentage'].idxmin()]
-st.success(f"Based on your parameters, **{min_cost_option['Investment Type']}** is the most cost-effective option with a total cost of {min_cost_option['Cost Percentage']:.2f}% over {holding_period} years.")
+
+col1, col2 = st.columns(2)
+with col1:
+    st.info(f"**Most Cost-Effective**: {min_cost_option['Investment Type']}\nTotal Cost: {min_cost_option['Cost Percentage']:.2f}%")
+    
+with col2:
+    st.success(f"**Highest Profit Potential**: {best_profit_option['Investment Type']}\nEstimated Return: {best_profit_option['Net Annual Return']:.1f}% per year")
+
+# Display profit comparison
+st.subheader("Profit Potential Comparison")
+profit_fig = px.bar(
+    df_returns,
+    x='Investment Type',
+    y='Potential Profit',
+    title=f'Estimated Profit Over {holding_period} Years (USD)',
+    labels={'Potential Profit': 'Profit ($)'}
+)
+st.plotly_chart(profit_fig, use_container_width=True)
 
 # Display comparison
 st.subheader("Cost Comparison")
