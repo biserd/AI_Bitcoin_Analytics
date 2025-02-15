@@ -1,0 +1,44 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://bitcoin-etf-analytics.replit.app/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://bitcoin-etf-analytics.replit.app/Correlation_Analysis</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://bitcoin-etf-analytics.replit.app/Tracking_Error</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://bitcoin-etf-analytics.replit.app/Liquidity_Analysis</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://bitcoin-etf-analytics.replit.app/Risk_Metrics</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://bitcoin-etf-analytics.replit.app/AI_Predictions</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://bitcoin-etf-analytics.replit.app/Education</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bitcoin-etf-analytics.replit.app/Cost_Analysis</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
