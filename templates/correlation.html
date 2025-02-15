@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Correlation Analysis - Bitcoin Analytics{% endblock %}
+
+{% block content %}
+<h1>Bitcoin & ETF Correlation Analysis</h1>
+
+{% if price_chart %}
+<div class="chart-container">
+    <h2>Bitcoin Price History</h2>
+    {{ price_chart | safe }}
+</div>
+{% endif %}
+
+{% if etf_chart %}
+<div class="chart-container">
+    <h2>ETF Comparison</h2>
+    {{ etf_chart | safe }}
+</div>
+{% endif %}
+{% endblock %}

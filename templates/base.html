@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Bitcoin Analytics Dashboard{% endblock %}</title>
+    <!-- Load Plotly -->
+    <script src="https://cdn.plot.ly/plotly-2.29.1.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .nav {
+            background: white;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .nav a {
+            text-decoration: none;
+            color: #333;
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .nav a:hover {
+            background-color: #f0f0f0;
+        }
+        .nav a.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .error {
+            color: #dc3545;
+            padding: 1rem;
+            margin: 1rem 0;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+        }
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        {% block additional_styles %}{% endblock %}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a href="/" {% if request.path == '/' %}class="active"{% endif %}>Dashboard</a>
+            <a href="/correlation" {% if request.path == '/correlation' %}class="active"{% endif %}>Correlation Analysis</a>
+            <a href="/liquidity" {% if request.path == '/liquidity' %}class="active"{% endif %}>Liquidity Analysis</a>
+            <a href="/predictions" {% if request.path == '/predictions' %}class="active"{% endif %}>AI Predictions</a>
+            <a href="/education" {% if request.path == '/education' %}class="active"{% endif %}>Education</a>
+        </nav>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

@@ -44,10 +44,40 @@
             border: 1px solid #f5c6cb;
             border-radius: 4px;
         }
+        .nav {
+            background: white;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .nav a {
+            text-decoration: none;
+            color: #333;
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .nav a:hover {
+            background-color: #f0f0f0;
+        }
+        .nav a.active {
+            background-color: #007bff;
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <nav class="nav">
+            <a href="/" class="active">Dashboard</a>
+            <a href="/correlation">Correlation Analysis</a>
+            <a href="/liquidity">Liquidity Analysis</a>
+            <a href="/predictions">AI Predictions</a>
+            <a href="/education">Education</a>
+        </nav>
+
         <h1>Bitcoin Analytics Dashboard</h1>
 
         {% if error %}

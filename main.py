@@ -21,26 +21,23 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
+    """Main dashboard page"""
     try:
-        # Fetch current Bitcoin price and metrics
         btc_data = get_bitcoin_data()
         if not btc_data:
             logger.error("Failed to fetch Bitcoin data")
             return render_template('index.html', error="Unable to fetch Bitcoin data")
 
-        # Get historical price data
         historical_data = fetch_bitcoin_price()
         price_chart = create_price_chart(historical_data) if not historical_data.empty else None
         if not price_chart:
             logger.warning("No historical price data available")
 
-        # Get ETF data
         etf_data = fetch_etf_data()
         etf_chart = create_etf_comparison(etf_data) if etf_data else None
         if not etf_chart:
             logger.warning("No ETF data available")
 
-        # Get metrics data
         metrics_data = fetch_onchain_metrics()
         active_addresses_chart = None
         hash_rate_chart = None
@@ -61,6 +58,49 @@ def index():
     except Exception as e:
         logger.error(f"Error rendering dashboard: {str(e)}", exc_info=True)
         return render_template('index.html', error=f"An error occurred: {str(e)}")
+
+@app.route('/correlation')
+def correlation():
+    """Correlation analysis page"""
+    try:
+        historical_data = fetch_bitcoin_price()
+        etf_data = fetch_etf_data()
+        return render_template('correlation.html',
+            price_chart=create_price_chart(historical_data) if not historical_data.empty else None,
+            etf_chart=create_etf_comparison(etf_data) if etf_data else None
+        )
+    except Exception as e:
+        logger.error(f"Error in correlation analysis: {str(e)}", exc_info=True)
+        return render_template('correlation.html', error=str(e))
+
+@app.route('/liquidity')
+def liquidity():
+    """Liquidity analysis page"""
+    try:
+        etf_data = fetch_etf_data()
+        return render_template('liquidity.html', etf_data=etf_data)
+    except Exception as e:
+        logger.error(f"Error in liquidity analysis: {str(e)}", exc_info=True)
+        return render_template('liquidity.html', error=str(e))
+
+@app.route('/predictions')
+def predictions():
+    """AI predictions page"""
+    try:
+        historical_data = fetch_bitcoin_price()
+        metrics_data = fetch_onchain_metrics()
+        return render_template('predictions.html',
+            historical_data=historical_data,
+            metrics_data=metrics_data
+        )
+    except Exception as e:
+        logger.error(f"Error in predictions: {str(e)}", exc_info=True)
+        return render_template('predictions.html', error=str(e))
+
+@app.route('/education')
+def education():
+    """Educational content page"""
+    return render_template('education.html')
 
 @app.route('/health')
 def health_check():
