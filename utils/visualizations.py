@@ -3,6 +3,7 @@ import plotly.express as px
 import pandas as pd
 
 def create_price_chart(df):
+    """Create interactive price chart"""
     fig = go.Figure()
 
     fig.add_trace(go.Candlestick(
@@ -23,10 +24,11 @@ def create_price_chart(df):
         margin=dict(l=20, r=20, t=40, b=20)
     )
 
-    return fig
+    # Return the full HTML instead of just the div
+    return fig.to_html(full_html=False, include_plotlyjs=False)
 
 def create_metric_chart(df, metric_name, color='#F7931A'):
-    # Reset index to make the timestamp a column
+    """Create metric visualization"""
     df_plot = df.reset_index()
 
     fig = px.line(df_plot, x='timestamp', y=metric_name,
@@ -39,9 +41,10 @@ def create_metric_chart(df, metric_name, color='#F7931A'):
         margin=dict(l=20, r=20, t=40, b=20)
     )
 
-    return fig
+    return fig.to_html(full_html=False, include_plotlyjs=False)
 
 def create_etf_comparison(etf_data):
+    """Create ETF comparison chart"""
     fig = go.Figure()
 
     for etf, data in etf_data.items():
@@ -61,4 +64,4 @@ def create_etf_comparison(etf_data):
         margin=dict(l=20, r=20, t=40, b=20)
     )
 
-    return fig
+    return fig.to_html(full_html=False, include_plotlyjs=False)

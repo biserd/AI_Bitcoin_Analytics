@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bitcoin Analytics Dashboard</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Load Plotly -->
+    <script src="https://cdn.plot.ly/plotly-2.29.1.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,26 +36,38 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
+        .error {
+            color: #dc3545;
+            padding: 1rem;
+            margin: 1rem 0;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Bitcoin Analytics Dashboard</h1>
-        
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
         {% if btc_data %}
         <div class="metrics">
             <div class="metric-card">
                 <h3>Bitcoin Price</h3>
-                <p>${{ "{:,.2f}".format(btc_data.price) }}</p>
-                <small>24h Change: ${{ "{:,.2f}".format(btc_data.change_24h) }}</small>
+                <p>${{ "{:,.2f}".format(btc_data['price']) }}</p>
+                <small>24h Change: {{ "{:+,.2f}".format(btc_data['change_24h']) }}</small>
             </div>
             <div class="metric-card">
                 <h3>24h Volume</h3>
-                <p>${{ "{:,.0f}".format(btc_data.volume) }}</p>
+                <p>${{ "{:,.0f}".format(btc_data['volume']) }}</p>
             </div>
             <div class="metric-card">
                 <h3>Last Updated</h3>
-                <p>{{ btc_data.timestamp.split('T')[0] }}</p>
+                <p>{{ btc_data['timestamp'].split('T')[0] }}</p>
             </div>
         </div>
         {% endif %}
