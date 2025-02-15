@@ -88,6 +88,8 @@ if not btc_price.empty and not onchain_data.empty:
                     with st.expander("Key Factors"):
                         for factor in analysis["key_factors"][:2]:
                             st.markdown(f"• {factor}")
+        except Exception as e:
+            st.error(f"Error parsing AI analysis: {str(e)}")
 
 st.divider()
 
