@@ -2,11 +2,11 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
+from sqlalchemy import func
 from utils.database import (
     store_bitcoin_price, store_etf_data, store_onchain_metrics,
     BitcoinPrice, ETFData, OnchainMetric, get_db
 )
-from sqlalchemy import func
 
 def get_bitcoin_data():
     """Fetch current Bitcoin price data"""
