@@ -1,7 +1,3 @@
-To complete this, create a file named `templates/index.html` with the following content.  This is a basic example and will need significant expansion to replicate the full functionality of the original Streamlit app using Javascript for interactivity and charting libraries like Chart.js or Plotly.js.
-
-
-```html
 <!DOCTYPE html>
 <html>
 <head>
