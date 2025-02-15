@@ -3,6 +3,7 @@ import os
 import logging
 from typing import Dict, Any, Optional
 from pydantic import BaseModel
+from datetime import datetime
 
 # Configure detailed logging
 logging.basicConfig(
@@ -17,13 +18,15 @@ sys.path.append(project_root)
 logger.debug(f"Added to Python path: {project_root}")
 
 try:
-    # Import existing utilities
-    logger.debug("Importing utilities...")
-    from utils.data_fetcher import get_bitcoin_data, fetch_bitcoin_price
+    # Import existing utilities and services
+    logger.debug("Importing utilities and services...")
+    from utils.data_fetcher import get_bitcoin_data, fetch_bitcoin_price, fetch_etf_data, fetch_onchain_metrics
     from utils.database import get_db_connection, init_db
-    from utils.predictions import generate_predictions
+    from utils.predictions import analyze_market_trends, generate_predictions
     from utils.alerts import check_price_alerts
-    logger.debug("Successfully imported all utilities")
+    from api.services.metrics import format_metrics, calculate_market_metrics
+    from api.services.education import get_educational_content
+    logger.debug("Successfully imported all utilities and services")
 except Exception as e:
     logger.error(f"Error importing utilities: {str(e)}")
     raise
@@ -31,14 +34,9 @@ except Exception as e:
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 # Response models
-class BitcoinPriceResponse(BaseModel):
-    price: float
-    volume: float
-    change_24h: float
-    timestamp: str
-
 class APIResponse(BaseModel):
     success: bool
     data: Optional[Any] = None
@@ -47,20 +45,14 @@ class APIResponse(BaseModel):
 # Initialize FastAPI app
 app = FastAPI(
     title="Bitcoin Analytics Dashboard API",
-    description="API endpoints for Bitcoin market analysis and predictions",
+    description="Advanced Bitcoin market analysis and predictions API",
     version="1.0.0"
 )
 
 # Configure CORS
-origins = [
-    "http://localhost:5000",
-    "http://0.0.0.0:5000",
-    "*"  # For development only, restrict in production
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  # Configure appropriately in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -71,7 +63,6 @@ async def startup_event():
     """Initialize components on startup"""
     logger.info("Initializing application components...")
     try:
-        # Initialize database
         if not init_db():
             raise Exception("Failed to initialize database")
         logger.info("Database initialized successfully")
@@ -81,10 +72,15 @@ async def startup_event():
 
 @app.get("/")
 async def root():
-    """Root endpoint for health check"""
-    return APIResponse(success=True, data={"message": "Bitcoin Analytics Dashboard API"})
+    """Health check endpoint"""
+    return {"success": True, "message": "Bitcoin Analytics Dashboard API"}
 
-@app.get("/api/bitcoin/price", response_model=APIResponse)
+@app.get("/api/health")
+async def health_check():
+    """API health check endpoint"""
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
+@app.get("/api/bitcoin/price")
 async def get_bitcoin_price():
     """Get current Bitcoin price data"""
     try:
@@ -92,71 +88,99 @@ async def get_bitcoin_price():
         data = get_bitcoin_data()
 
         if not data:
-            logger.warning("No Bitcoin price data available")
-            return APIResponse(
-                success=False,
-                error="Bitcoin price data not available"
-            )
+            return APIResponse(success=False, error="Bitcoin price data not available")
 
-        return APIResponse(success=True, data=data)
+        # Format metrics
+        formatted_data = format_metrics(data)
+        market_metrics = calculate_market_metrics(data)
+
+        response_data = {**formatted_data, "market_metrics": market_metrics}
+        return APIResponse(success=True, data=response_data)
     except Exception as e:
         logger.error(f"Error fetching Bitcoin price: {str(e)}")
         return APIResponse(success=False, error=str(e))
 
-@app.get("/api/bitcoin/predictions", response_model=APIResponse)
-async def get_predictions():
-    """Get market predictions"""
+@app.get("/api/bitcoin/historical")
+async def get_historical_data():
+    """Get historical Bitcoin price data"""
     try:
-        logger.debug("Generating predictions...")
+        logger.debug("Fetching historical Bitcoin data...")
+        data = fetch_bitcoin_price()
+
+        if data.empty:
+            return APIResponse(success=False, error="Historical data not available")
+
+        # Convert DataFrame to dict for JSON serialization
+        historical_data = data.reset_index().to_dict('records')
+        return APIResponse(success=True, data=historical_data)
+    except Exception as e:
+        logger.error(f"Error fetching historical data: {str(e)}")
+        return APIResponse(success=False, error=str(e))
+
+@app.get("/api/bitcoin/analysis")
+async def get_market_analysis():
+    """Get comprehensive market analysis"""
+    try:
+        logger.debug("Generating market analysis...")
+        price_data = fetch_bitcoin_price()
+        onchain_data = fetch_onchain_metrics()
+
+        if price_data.empty or onchain_data.empty:
+            return APIResponse(success=False, error="Required data not available")
+
+        analysis = analyze_market_trends(price_data, onchain_data)
         predictions = generate_predictions()
 
-        if not predictions:
-            logger.warning("No prediction data available")
-            return APIResponse(
-                success=False,
-                error="Prediction data not available"
-            )
-
-        return APIResponse(success=True, data=predictions)
+        return APIResponse(success=True, data={
+            "analysis": analysis,
+            "predictions": predictions
+        })
     except Exception as e:
-        logger.error(f"Error generating predictions: {str(e)}")
+        logger.error(f"Error generating analysis: {str(e)}")
         return APIResponse(success=False, error=str(e))
 
-@app.get("/api/bitcoin/metrics", response_model=APIResponse)
-async def get_metrics():
-    """Get Bitcoin metrics"""
-    db = None
+@app.get("/api/etf/data")
+async def get_etf_data():
+    """Get Bitcoin ETF data"""
     try:
-        logger.debug("Fetching metrics...")
-        db = next(get_db_connection())
+        logger.debug("Fetching ETF data...")
+        data = fetch_etf_data()
 
-        # Get the latest Bitcoin price data
-        btc_data = get_bitcoin_data()
-        if not btc_data:
-            return APIResponse(
-                success=False,
-                error="Failed to fetch Bitcoin metrics"
-            )
+        if not data:
+            return APIResponse(success=False, error="ETF data not available")
 
-        return APIResponse(success=True, data=btc_data)
+        # Process ETF data for response
+        etf_summary = {}
+        for etf, etf_data in data.items():
+            etf_summary[etf] = {
+                "latest_price": float(etf_data['history']['Close'].iloc[-1]),
+                "volume": float(etf_data['history']['Volume'].iloc[-1]),
+                "orderbook": etf_data['orderbook']
+            }
+
+        return APIResponse(success=True, data=etf_summary)
     except Exception as e:
-        logger.error(f"Error fetching metrics: {str(e)}")
+        logger.error(f"Error fetching ETF data: {str(e)}")
         return APIResponse(success=False, error=str(e))
-    finally:
-        if db:
-            db.close()
+
+@app.get("/api/education/content")
+async def get_education():
+    """Get educational content"""
+    try:
+        logger.debug("Fetching educational content...")
+        content = get_educational_content()
+        return APIResponse(success=True, data=content)
+    except Exception as e:
+        logger.error(f"Error fetching educational content: {str(e)}")
+        return APIResponse(success=False, error=str(e))
 
 if __name__ == "__main__":
-    try:
-        import uvicorn
-        logger.info("Starting FastAPI server...")
-        uvicorn.run(
-            "main:app", 
-            host="0.0.0.0", 
-            port=8000, 
-            reload=True,
-            log_level="debug"
-        )
-    except Exception as e:
-        logger.error(f"Server startup error: {str(e)}")
-        raise
+    import uvicorn
+    logger.info("Starting FastAPI server...")
+    uvicorn.run(
+        app, 
+        host="0.0.0.0", 
+        port=8000, 
+        reload=True,
+        log_level="debug"
+    )
