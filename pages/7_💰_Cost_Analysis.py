@@ -5,10 +5,10 @@ import plotly.express as px
 from utils.data_fetcher import fetch_bitcoin_price, fetch_etf_data
 from datetime import datetime, timedelta
 
-st.set_page_config(page_title="Cost Analysis", page_icon="💰", layout="wide")
+st.set_page_config(page_title="Bitcoin Price Analysis", page_icon="💰", layout="wide")
 
-st.title("Bitcoin vs ETF Cost Analysis")
-st.markdown("Compare the total cost of ownership between spot Bitcoin and Bitcoin ETFs")
+st.title("Bitcoin Price Analysis")
+st.markdown("Compare investment options between spot Bitcoin and Bitcoin ETFs")
 
 # Load data
 with st.spinner('Fetching data...'):
@@ -49,9 +49,6 @@ def calculate_total_cost(investment_amount, holding_period, is_etf=True, expense
     total_cost = trading_costs + (annual_costs * holding_period)
     return total_cost
 
-# Display comparison
-st.subheader("Cost Comparison")
-
 costs_data = []
 # Calculate Bitcoin costs
 btc_total_cost = calculate_total_cost(investment_amount, holding_period, False)
@@ -70,8 +67,15 @@ for etf, cost_info in etf_costs.items():
         'Cost Percentage': (total_cost / investment_amount) * 100
     })
 
-# Create comparison chart
 df_costs = pd.DataFrame(costs_data)
+
+# Display recommendation first
+st.subheader("Investment Recommendation")
+min_cost_option = df_costs.loc[df_costs['Cost Percentage'].idxmin()]
+st.success(f"Based on your parameters, **{min_cost_option['Investment Type']}** is the most cost-effective option with a total cost of {min_cost_option['Cost Percentage']:.2f}% over {holding_period} years.")
+
+# Display comparison
+st.subheader("Cost Comparison")
 fig = px.bar(
     df_costs,
     x='Investment Type',
@@ -84,11 +88,6 @@ st.plotly_chart(fig, use_container_width=True)
 # Display detailed breakdown
 st.subheader("Detailed Cost Breakdown")
 st.dataframe(df_costs)
-
-# Recommendation
-st.subheader("Investment Recommendation")
-min_cost_option = df_costs.loc[df_costs['Cost Percentage'].idxmin()]
-st.success(f"Based on your parameters, **{min_cost_option['Investment Type']}** is the most cost-effective option with a total cost of {min_cost_option['Cost Percentage']:.2f}% over {holding_period} years.")
 
 # Considerations
 st.markdown("""
