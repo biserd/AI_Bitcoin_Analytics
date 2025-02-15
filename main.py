@@ -37,7 +37,7 @@ st.components.v1.html(ga_js, height=0, width=0)
 # Initialize session state for analytics
 if 'analytics_loaded' not in st.session_state:
     st.session_state.analytics_loaded = True
-    st.experimental_rerun()
+    st.rerun()
 
 # Add meta tags
 st.markdown("""
