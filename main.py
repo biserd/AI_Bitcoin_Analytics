@@ -16,7 +16,7 @@ st.set_page_config(
         """
         # Bitcoin Analytics Dashboard
         Comprehensive Bitcoin ETF and On-Chain Analytics Platform providing real-time market insights, ETF analysis, and AI-powered predictions.
-        
+
         Keywords: Bitcoin, ETF, Cryptocurrency, Market Analysis, Trading, Blockchain
         """
     })
@@ -35,8 +35,21 @@ st.markdown("""
         <meta property="og:description" content="Real-time Bitcoin ETF and cryptocurrency analytics platform">
         <meta property="og:type" content="website">
     </head>
-    """,
-            unsafe_allow_html=True)
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Bitcoin ETF Analytics Dashboard",
+      "description": "Real-time Bitcoin ETF and cryptocurrency analytics platform providing market insights and trading analysis",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0"
+      }
+    }
+    </script>
+    """, unsafe_allow_html=True)
 
 # CSS is now loaded via config.toml
 
