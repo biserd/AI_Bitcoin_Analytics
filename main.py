@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import json
+from utils.predictions import analyze_market_trends
 from utils.data_fetcher import fetch_bitcoin_price, fetch_etf_data, fetch_onchain_metrics
 from utils.visualizations import create_price_chart, create_etf_comparison
 from components.metrics import display_metrics_section
@@ -56,6 +58,38 @@ st.markdown("""
 # Header
 st.title("Bitcoin AI Analytics Dashboard")
 st.markdown("### Comprehensive Bitcoin ETF and On-Chain Analytics Platform")
+
+# Display AI Predictions at the top
+if not btc_price.empty and not onchain_data.empty:
+    # Generate AI analysis
+    analysis_json = analyze_market_trends(btc_price, onchain_data)
+    if analysis_json:
+        try:
+            analysis = json.loads(analysis_json)
+            
+            # Market Sentiment Section
+            col1, col2, col3 = st.columns([2,1,1])
+            with col1:
+                sentiment_color = {
+                    "bullish": "🟢",
+                    "bearish": "🔴",
+                    "neutral": "⚪"
+                }.get(analysis["market_sentiment"], "⚪")
+                st.subheader(f"AI Market Sentiment: {sentiment_color} {analysis['market_sentiment'].title()}")
+                st.progress(analysis["confidence_score"])
+            
+            with col2:
+                st.metric("Price Direction", 
+                         analysis["prediction"]["price_direction"].title(),
+                         f"{analysis['prediction']['confidence']*100:.1f}% confidence")
+            
+            with col3:
+                if "key_factors" in analysis:
+                    with st.expander("Key Factors"):
+                        for factor in analysis["key_factors"][:2]:
+                            st.markdown(f"• {factor}")
+
+st.divider()
 
 # Sidebar for navigation with custom styling
 with st.sidebar:
