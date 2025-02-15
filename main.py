@@ -24,8 +24,8 @@ with st.sidebar:
     st.markdown("### 📊 Navigation")
     page = st.radio(
         "",  # Empty label for cleaner look
-        ["Home", "ETF Analysis", "Market Metrics", "Education"],
-        format_func=lambda x: f"{'🏠' if x == 'Overview' else '📈' if x == 'ETF Analysis' else '📊' if x == 'Market Metrics' else '📚'} {x}"
+        ["Home", "ETF Analysis", "Market Metrics"],
+        format_func=lambda x: f"{'🏠' if x == 'Home' else '📈' if x == 'ETF Analysis' else '📊' if x == 'Market Metrics'} {x}"
     )
 
 # Load key metrics for homepage
@@ -88,9 +88,6 @@ elif page == "Market Metrics":
         with metrics_tab2:
             st.subheader("Mining Metrics")
             st.line_chart(onchain_data['hash_rate'])
-
-elif page == "Education":
-    display_education_section()
 
 # Footer
 st.markdown("---")
