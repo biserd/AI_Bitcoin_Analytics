@@ -5,7 +5,6 @@ description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
     "anthropic>=0.45.2",
-    "flask>=3.1.0",
     "numpy>=2.2.2",
     "openai>=1.63.0",
     "pandas>=2.2.3",

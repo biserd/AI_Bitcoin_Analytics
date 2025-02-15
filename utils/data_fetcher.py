@@ -16,17 +16,16 @@ def fetch_bitcoin_price():
         btc = yf.Ticker("BTC-USD")
         history = btc.history(period="1y")
 
-        if not isinstance(history, pd.DataFrame) or history.empty:
-            return pd.DataFrame({'Close': [0]}, index=[pd.Timestamp.now()])
+        if isinstance(history, pd.DataFrame) and history.empty:
+            st.error("No Bitcoin price data available")
+            return pd.DataFrame()
 
-        # Clean infinite values
-        history = history.replace([np.inf, -np.inf], np.nan)
-        history = history.fillna(method='ffill').fillna(method='bfill')
-        
+        # Store in database
+        store_bitcoin_price(history)
         return history
     except Exception as e:
         st.error(f"Error fetching Bitcoin price data: {str(e)}")
-        return pd.DataFrame({'Close': [0], 'Date': [pd.Timestamp.now()]})
+        return pd.DataFrame()
 
 @st.cache_data(ttl=3600)
 def fetch_etf_data():
