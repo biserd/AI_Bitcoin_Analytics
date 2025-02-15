@@ -24,20 +24,20 @@ st.set_page_config(
 # Add Google Analytics
 ga_js = """
     <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SHFQGXHS8E"></script>
     <script>
-        // Create script element for gtag
-        var gtagScript = document.createElement('script');
-        gtagScript.async = true;
-        gtagScript.src = "https://www.googletagmanager.com/gtag/js?id=G-SHFQGXHS8E";
-        document.head.appendChild(gtagScript);
-        
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
         gtag('config', 'G-SHFQGXHS8E');
     </script>
 """
-st.components.v1.html(ga_js, height=0)
+st.components.v1.html(ga_js, height=0, width=0)
+
+# Initialize session state for analytics
+if 'analytics_loaded' not in st.session_state:
+    st.session_state.analytics_loaded = True
+    st.experimental_rerun()
 
 # Add meta tags
 st.markdown("""
