@@ -25,7 +25,7 @@ args = "Frontend"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Streamlit App"
+args = "Flask Server"
 
 [[workflows.workflow]]
 name = "FastAPI Server"
@@ -58,7 +58,7 @@ args = "cd frontend && npm run dev"
 waitForPort = 5173
 
 [[workflows.workflow]]
-name = "Streamlit App"
+name = "Flask Server"
 author = "agent"
 
 [workflows.workflow.metadata]
@@ -69,7 +69,7 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "streamlit run main.py"
+args = "python main.py"
 waitForPort = 5000
 
 [[ports]]

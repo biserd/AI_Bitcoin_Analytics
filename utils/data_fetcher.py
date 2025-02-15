@@ -95,11 +95,11 @@ def fetch_etf_data():
 
         except Exception as e:
             if "ambiguous" not in str(e).lower():  # Only show non-ambiguous errors
-                print(f"Error fetching data for {etf}: {str(e)}") #Changed st.warning to print for FastAPI compatibility
+                print(f"Error fetching data for {etf}: {str(e)}")
             continue
 
     if len(data) == 0:
-        print("No ETF data available") #Changed st.warning to print for FastAPI compatibility
+        print("No ETF data available")
 
     return data
 
@@ -112,20 +112,20 @@ def fetch_onchain_metrics():
         dates = pd.date_range(start=start_date, end=end_date, freq='D')
 
         data = {
-            'date': dates,
+            'timestamp': dates,
             'active_addresses': np.random.randint(800000, 1200000, size=len(dates)),
             'transaction_volume': np.random.randint(200000, 500000, size=len(dates)),
             'hash_rate': np.random.randint(200, 300, size=len(dates))
         }
 
         df = pd.DataFrame(data)
-        df.set_index('date', inplace=True)
+        df.set_index('timestamp', inplace=True)
 
         # Store in database
         store_onchain_metrics(df)
         return df
     except Exception as e:
-        raise Exception(f"Error generating on-chain metrics: {str(e)}") #Changed st.error to raise exception for FastAPI compatibility
+        raise Exception(f"Error generating on-chain metrics: {str(e)}")
 
 
 def get_historical_metrics():
@@ -148,4 +148,4 @@ def get_historical_metrics():
             'hash_rate': metric.hash_rate
         } for metric in latest_metrics])
     except Exception as e:
-        raise Exception(f"Error retrieving historical metrics: {str(e)}") #Changed st.error to raise exception for FastAPI compatibility
+        raise Exception(f"Error retrieving historical metrics: {str(e)}")

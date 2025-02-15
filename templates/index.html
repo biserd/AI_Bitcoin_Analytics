@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Analytics Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bitcoin Analytics Dashboard</h1>
+        
+        {% if btc_data %}
+        <div class="metrics">
+            <div class="metric-card">
+                <h3>Bitcoin Price</h3>
+                <p>${{ "{:,.2f}".format(btc_data.price) }}</p>
+                <small>24h Change: ${{ "{:,.2f}".format(btc_data.change_24h) }}</small>
+            </div>
+            <div class="metric-card">
+                <h3>24h Volume</h3>
+                <p>${{ "{:,.0f}".format(btc_data.volume) }}</p>
+            </div>
+            <div class="metric-card">
+                <h3>Last Updated</h3>
+                <p>{{ btc_data.timestamp.split('T')[0] }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if price_chart %}
+        <div class="chart-container">
+            <h2>Price History</h2>
+            {{ price_chart | safe }}
+        </div>
+        {% endif %}
+
+        {% if etf_chart %}
+        <div class="chart-container">
+            <h2>ETF Analysis</h2>
+            {{ etf_chart | safe }}
+        </div>
+        {% endif %}
+
+        <div class="chart-container">
+            <h2>On-chain Metrics</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                {% if active_addresses_chart %}
+                <div>{{ active_addresses_chart | safe }}</div>
+                {% endif %}
+                {% if hash_rate_chart %}
+                <div>{{ hash_rate_chart | safe }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
