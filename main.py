@@ -12,7 +12,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-    menu_items={
         'About':
         """
         # Bitcoin Analytics Dashboard
