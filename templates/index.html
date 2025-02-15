@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bitcoin Analytics Dashboard | Real-time Crypto Analysis</title>
+    <meta name="description" content="Comprehensive Bitcoin ETF and cryptocurrency analytics platform">
+    <meta name="keywords" content="Bitcoin, ETF, Cryptocurrency, Market Analysis">
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SHFQGXHS8E"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-SHFQGXHS8E');
+    </script>
+    
+    <!-- Include Plotly for charts -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='custom.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Bitcoin AI Analytics Dashboard</h1>
+        <h3>Comprehensive Bitcoin ETF and On-Chain Analytics Platform</h3>
+        
+        <div id="price-chart"></div>
+        <div id="etf-comparison"></div>
+    </div>
+
+    <script>
+        // Initialize charts with data from Flask
+        const btcPrice = {{ btc_price|tojson }};
+        const etfData = {{ etf_data|tojson }};
+        
+        // Create price chart
+        Plotly.newPlot('price-chart', [{
+            x: Object.keys(btcPrice),
+            y: Object.values(btcPrice).map(d => d.Close),
+            type: 'scatter'
+        }], {
+            title: 'Bitcoin Price Overview'
+        });
+        
+        // Additional chart initialization code here
+    </script>
+</body>
+</html>
