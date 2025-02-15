@@ -7,11 +7,31 @@ from components.education import display_education_section
 
 # Page configuration
 st.set_page_config(
-    page_title="Bitcoin Analytics Dashboard",
+    page_title="Bitcoin Analytics Dashboard | Real-time Crypto Analysis",
     page_icon="📈",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
+    menu_items={
+        'About': """
+        # Bitcoin Analytics Dashboard
+        Comprehensive Bitcoin ETF and On-Chain Analytics Platform providing real-time market insights, ETF analysis, and AI-powered predictions.
+        
+        Keywords: Bitcoin, ETF, Cryptocurrency, Market Analysis, Trading, Blockchain
+        """
+    }
 )
+
+# Add meta tags
+st.markdown("""
+    <head>
+        <title>Bitcoin Analytics Dashboard | Real-time Crypto Analysis</title>
+        <meta name="description" content="Comprehensive Bitcoin ETF and cryptocurrency analytics platform. Track real-time market data, ETF performance, and on-chain metrics.">
+        <meta name="keywords" content="Bitcoin, ETF, Cryptocurrency, Market Analysis, Trading, Blockchain, Analytics">
+        <meta property="og:title" content="Bitcoin Analytics Dashboard">
+        <meta property="og:description" content="Real-time Bitcoin ETF and cryptocurrency analytics platform">
+        <meta property="og:type" content="website">
+    </head>
+    """, unsafe_allow_html=True)
 
 # CSS is now loaded via config.toml
 
