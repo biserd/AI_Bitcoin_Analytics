@@ -12,25 +12,25 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        'About': """
+        'About':
+        """
         # Bitcoin Analytics Dashboard
         Comprehensive Bitcoin ETF and On-Chain Analytics Platform providing real-time market insights, ETF analysis, and AI-powered predictions.
         
         Keywords: Bitcoin, ETF, Cryptocurrency, Market Analysis, Trading, Blockchain
         """
-    }
-)
+    })
 
 # Add meta tags
 st.markdown("""
     <head>
         <!-- Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-SHFQGXHS8E"></script>
         <script>
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-XXXXXXXXXX');
+            gtag('config', 'G-SHFQGXHS8E');
         </script>
         <title>Bitcoin Analytics Dashboard | Real-time Crypto Analysis</title>
         <meta name="description" content="Comprehensive Bitcoin ETF and cryptocurrency analytics platform. Track real-time market data, ETF performance, and on-chain metrics.">
@@ -39,7 +39,8 @@ st.markdown("""
         <meta property="og:description" content="Real-time Bitcoin ETF and cryptocurrency analytics platform">
         <meta property="og:type" content="website">
     </head>
-    """, unsafe_allow_html=True)
+    """,
+            unsafe_allow_html=True)
 
 # CSS is now loaded via config.toml
 
@@ -53,8 +54,8 @@ with st.sidebar:
     page = st.radio(
         "",  # Empty label for cleaner look
         ["Home", "ETF Analysis", "Market Metrics"],
-        format_func=lambda x: f"{'🏠' if x == 'Home' else '📈' if x == 'ETF Analysis' else '📊'} {x}"
-    )
+        format_func=lambda x:
+        f"{'🏠' if x == 'Home' else '📈' if x == 'ETF Analysis' else '📊'} {x}")
 
 # Load key metrics for homepage
 with st.spinner('Fetching latest data...'):
@@ -67,17 +68,20 @@ if page == "Home":
     if not btc_price.empty and not onchain_data.empty:
         display_metrics_section(btc_price, onchain_data)
     else:
-        st.warning("Some data is currently unavailable. Please try again later.")
+        st.warning(
+            "Some data is currently unavailable. Please try again later.")
 
     # Main price chart
     if not btc_price.empty:
         st.subheader("Bitcoin Price Overview")
-        st.plotly_chart(create_price_chart(btc_price), use_container_width=True)
+        st.plotly_chart(create_price_chart(btc_price),
+                        use_container_width=True)
 
     # ETF Comparison
     if etf_data:
         st.subheader("ETF Performance Comparison")
-        st.plotly_chart(create_etf_comparison(etf_data), use_container_width=True)
+        st.plotly_chart(create_etf_comparison(etf_data),
+                        use_container_width=True)
 
 elif page == "ETF Analysis":
     st.header("ETF Analysis")
@@ -96,8 +100,7 @@ elif page == "ETF Analysis":
                     with col2:
                         st.metric(
                             "Volume",
-                            f"{etf_info['history']['Volume'].iloc[-1]:,.0f}"
-                        )
+                            f"{etf_info['history']['Volume'].iloc[-1]:,.0f}")
 
                     # Historical performance chart
                     st.line_chart(etf_info['history']['Close'])
@@ -106,7 +109,8 @@ elif page == "Market Metrics":
     st.header("Market Metrics")
     if not onchain_data.empty:
         # Display on-chain metrics
-        metrics_tab1, metrics_tab2 = st.tabs(["Network Activity", "Mining Metrics"])
+        metrics_tab1, metrics_tab2 = st.tabs(
+            ["Network Activity", "Mining Metrics"])
 
         with metrics_tab1:
             st.subheader("Network Activity")
@@ -121,5 +125,4 @@ elif page == "Market Metrics":
 st.markdown("---")
 st.markdown(
     "Data updates daily. On-chain metrics and ETF data are sourced from various providers. "
-    "This dashboard is for informational purposes only."
-)
+    "This dashboard is for informational purposes only.")
