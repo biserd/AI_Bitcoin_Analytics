@@ -16,7 +16,7 @@ st.set_page_config(
 # CSS is now loaded via config.toml
 
 # Header
-st.title("Home")
+st.title("Bitcoin AI Analytics Dashboard")
 st.markdown("### Comprehensive Bitcoin ETF and On-Chain Analytics Platform")
 
 # Sidebar for navigation with custom styling
@@ -24,7 +24,7 @@ with st.sidebar:
     st.markdown("### 📊 Navigation")
     page = st.radio(
         "",  # Empty label for cleaner look
-        ["Overview", "ETF Analysis", "Market Metrics", "Education"],
+        ["Home", "ETF Analysis", "Market Metrics", "Education"],
         format_func=lambda x: f"{'🏠' if x == 'Overview' else '📈' if x == 'ETF Analysis' else '📊' if x == 'Market Metrics' else '📚'} {x}"
     )
 
@@ -34,7 +34,7 @@ with st.spinner('Fetching latest data...'):
     etf_data = fetch_etf_data()
     onchain_data = fetch_onchain_metrics()
 
-if page == "Overview":
+if page == "Home":
     # Display metrics section if data is available
     if not btc_price.empty and not onchain_data.empty:
         display_metrics_section(btc_price, onchain_data)
