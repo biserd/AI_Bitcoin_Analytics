@@ -16,15 +16,17 @@ st.set_page_config(
 # CSS is now loaded via config.toml
 
 # Header
-st.title("Bitcoin Analytics Dashboard")
+st.title("Home")
 st.markdown("### Comprehensive Bitcoin ETF and On-Chain Analytics Platform")
 
-# Sidebar for navigation
-st.sidebar.title("Navigation")
-page = st.sidebar.radio(
-    "Select Analysis",
-    ["Overview", "ETF Analysis", "Market Metrics", "Education"]
-)
+# Sidebar for navigation with custom styling
+with st.sidebar:
+    st.markdown("### 📊 Navigation")
+    page = st.radio(
+        "",  # Empty label for cleaner look
+        ["Overview", "ETF Analysis", "Market Metrics", "Education"],
+        format_func=lambda x: f"{'🏠' if x == 'Overview' else '📈' if x == 'ETF Analysis' else '📊' if x == 'Market Metrics' else '📚'} {x}"
+    )
 
 # Load key metrics for homepage
 with st.spinner('Fetching latest data...'):
