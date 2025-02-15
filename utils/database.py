@@ -12,7 +12,19 @@ try:
     if not DATABASE_URL:
         raise ValueError("DATABASE_URL environment variable is not set")
 
-    engine = create_engine(DATABASE_URL)
+    # Add SSL configuration to handle connection issues
+    connect_args = {
+        "sslmode": "require",
+        "connect_timeout": 30
+    }
+
+    engine = create_engine(
+        DATABASE_URL, 
+        connect_args=connect_args,
+        pool_pre_ping=True,  # Enable connection health checks
+        pool_recycle=3600    # Recycle connections every hour
+    )
+
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     Base = declarative_base()
 except Exception as e:
@@ -116,7 +128,7 @@ def store_etf_data(symbol, data):
         timestamp = datetime.now()
         try:
             price = float(data['history']['Close'].iloc[-1])
-            volume = float(data['info'].get('volume', 0))
+            volume = float(data['history']['Volume'].iloc[-1])
             assets = float(data['info'].get('totalAssets', 0))
         except (ValueError, TypeError):
             price = 0.0

@@ -1,6 +1,8 @@
 import sys
 import os
 import logging
+from typing import Dict, Any, Optional
+from pydantic import BaseModel
 
 # Configure detailed logging
 logging.basicConfig(
@@ -17,18 +19,30 @@ logger.debug(f"Added to Python path: {project_root}")
 try:
     # Import existing utilities
     logger.debug("Importing utilities...")
-    from utils.data_fetcher import get_bitcoin_data
+    from utils.data_fetcher import get_bitcoin_data, fetch_bitcoin_price
     from utils.database import get_db_connection, init_db
     from utils.predictions import generate_predictions
-    from utils.visualizations import create_price_chart
     from utils.alerts import check_price_alerts
     logger.debug("Successfully imported all utilities")
 except Exception as e:
     logger.error(f"Error importing utilities: {str(e)}")
     raise
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+# Response models
+class BitcoinPriceResponse(BaseModel):
+    price: float
+    volume: float
+    change_24h: float
+    timestamp: str
+
+class APIResponse(BaseModel):
+    success: bool
+    data: Optional[Any] = None
+    error: Optional[str] = None
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -38,9 +52,15 @@ app = FastAPI(
 )
 
 # Configure CORS
+origins = [
+    "http://localhost:5000",
+    "http://0.0.0.0:5000",
+    "*"  # For development only, restrict in production
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -61,43 +81,67 @@ async def startup_event():
 
 @app.get("/")
 async def root():
-    return {"message": "Bitcoin Analytics Dashboard API"}
+    """Root endpoint for health check"""
+    return APIResponse(success=True, data={"message": "Bitcoin Analytics Dashboard API"})
 
-@app.get("/api/bitcoin/price")
+@app.get("/api/bitcoin/price", response_model=APIResponse)
 async def get_bitcoin_price():
+    """Get current Bitcoin price data"""
     try:
         logger.debug("Fetching Bitcoin price data...")
         data = get_bitcoin_data()
+
         if not data:
-            raise HTTPException(status_code=404, detail="Bitcoin price data not available")
-        return {"success": True, "data": data}
+            logger.warning("No Bitcoin price data available")
+            return APIResponse(
+                success=False,
+                error="Bitcoin price data not available"
+            )
+
+        return APIResponse(success=True, data=data)
     except Exception as e:
         logger.error(f"Error fetching Bitcoin price: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return APIResponse(success=False, error=str(e))
 
-@app.get("/api/bitcoin/predictions")
+@app.get("/api/bitcoin/predictions", response_model=APIResponse)
 async def get_predictions():
+    """Get market predictions"""
     try:
         logger.debug("Generating predictions...")
         predictions = generate_predictions()
+
         if not predictions:
-            raise HTTPException(status_code=404, detail="Prediction data not available")
-        return {"success": True, "data": predictions}
+            logger.warning("No prediction data available")
+            return APIResponse(
+                success=False,
+                error="Prediction data not available"
+            )
+
+        return APIResponse(success=True, data=predictions)
     except Exception as e:
         logger.error(f"Error generating predictions: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return APIResponse(success=False, error=str(e))
 
-@app.get("/api/bitcoin/metrics")
+@app.get("/api/bitcoin/metrics", response_model=APIResponse)
 async def get_metrics():
+    """Get Bitcoin metrics"""
     db = None
     try:
         logger.debug("Fetching metrics...")
         db = next(get_db_connection())
-        metrics = {"price": 0, "volume": 0}  # Placeholder
-        return {"success": True, "data": metrics}
+
+        # Get the latest Bitcoin price data
+        btc_data = get_bitcoin_data()
+        if not btc_data:
+            return APIResponse(
+                success=False,
+                error="Failed to fetch Bitcoin metrics"
+            )
+
+        return APIResponse(success=True, data=btc_data)
     except Exception as e:
         logger.error(f"Error fetching metrics: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return APIResponse(success=False, error=str(e))
     finally:
         if db:
             db.close()
