@@ -15,10 +15,17 @@ st.markdown("Real-time analysis of Bitcoin ETF performance and market metrics")
 with st.spinner('Loading data...'):
     btc_price = fetch_bitcoin_price()
     
-    if not btc_price.empty:
-        st.metric(
-            label="Bitcoin Price",
-            value=f"${btc_price['Close'].iloc[-1]:,.2f}"
-        )
-    else:
-        st.error("Unable to load Bitcoin price data")
+    try:
+        if not btc_price.empty and 'Close' in btc_price.columns:
+            latest_price = btc_price['Close'].iloc[-1]
+            if pd.notna(latest_price):
+                st.metric(
+                    label="Bitcoin Price",
+                    value=f"${latest_price:,.2f}"
+                )
+            else:
+                st.error("Invalid price data received")
+        else:
+            st.error("No price data available")
+    except Exception as e:
+        st.error(f"Error displaying price: {str(e)}")

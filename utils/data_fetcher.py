@@ -17,12 +17,11 @@ def fetch_bitcoin_price():
         history = btc.history(period="1y")
 
         if not isinstance(history, pd.DataFrame) or history.empty:
-            return pd.DataFrame({'Close': [0], 'Date': [pd.Timestamp.now()]})
+            return pd.DataFrame({'Close': [0]}, index=[pd.Timestamp.now()])
 
-        # Ensure data is properly formatted
-        history = history.reset_index()
-        history['Date'] = pd.to_datetime(history['Date'])
-        history = history.set_index('Date')
+        # Clean infinite values
+        history = history.replace([np.inf, -np.inf], np.nan)
+        history = history.fillna(method='ffill').fillna(method='bfill')
         
         return history
     except Exception as e:
