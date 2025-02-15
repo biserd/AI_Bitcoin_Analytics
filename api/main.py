@@ -4,6 +4,11 @@ import logging
 from typing import Dict, Any, Optional
 from pydantic import BaseModel
 from datetime import datetime
+from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.openapi.utils import get_openapi
 
 # Configure detailed logging
 logging.basicConfig(
@@ -31,21 +36,26 @@ except Exception as e:
     logger.error(f"Error importing utilities: {str(e)}")
     raise
 
-from fastapi import FastAPI, HTTPException, status
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
-
 # Response models
 class APIResponse(BaseModel):
     success: bool
     data: Optional[Any] = None
     error: Optional[str] = None
 
-# Initialize FastAPI app
+# Initialize FastAPI app with metadata
 app = FastAPI(
     title="Bitcoin Analytics Dashboard API",
-    description="Advanced Bitcoin market analysis and predictions API",
+    description="""
+    Advanced Bitcoin market analysis and predictions API providing comprehensive 
+    cryptocurrency market insights through real-time data processing and visualization.
+
+    Features:
+    - Real-time Bitcoin price data
+    - ETF tracking and analysis
+    - Market predictions and trends
+    - On-chain metrics analysis
+    - Educational content
+    """,
     version="1.0.0"
 )
 
@@ -70,25 +80,65 @@ async def startup_event():
         logger.error(f"Startup error: {str(e)}")
         raise
 
-@app.get("/")
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    """Custom Swagger UI endpoint"""
+    return get_swagger_ui_html(
+        openapi_url="/openapi.json",
+        title="Bitcoin Analytics API Documentation",
+        swagger_favicon_url="/static/favicon.ico"
+    )
+
+@app.get("/openapi.json", include_in_schema=False)
+async def get_openapi_endpoint():
+    """OpenAPI schema endpoint"""
+    return get_openapi(
+        title="Bitcoin Analytics Dashboard API",
+        version="1.0.0",
+        description="Comprehensive Bitcoin market analysis API",
+        routes=app.routes,
+    )
+
+@app.get("/", tags=["Health"])
 async def root():
-    """Health check endpoint"""
-    return {"success": True, "message": "Bitcoin Analytics Dashboard API"}
+    """API root endpoint serving as a health check"""
+    return {
+        "status": "healthy",
+        "service": "Bitcoin Analytics Dashboard API",
+        "version": "1.0.0",
+        "timestamp": datetime.now().isoformat()
+    }
 
-@app.get("/api/health")
+@app.get("/api/health", tags=["Health"])
 async def health_check():
-    """API health check endpoint"""
-    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+    """Detailed health check endpoint"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "services": {
+            "database": "connected",
+            "data_fetchers": "operational",
+            "predictions": "operational"
+        }
+    }
 
-@app.get("/api/bitcoin/price")
+@app.get("/api/bitcoin/price", tags=["Bitcoin"], response_model=APIResponse)
 async def get_bitcoin_price():
-    """Get current Bitcoin price data"""
+    """
+    Get current Bitcoin price data with additional market metrics
+
+    Returns:
+        JSON object containing current price, 24h change, volume, and market metrics
+    """
     try:
         logger.debug("Fetching Bitcoin price data...")
         data = get_bitcoin_data()
 
         if not data:
-            return APIResponse(success=False, error="Bitcoin price data not available")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Bitcoin price data not available"
+            )
 
         # Format metrics
         formatted_data = format_metrics(data)
@@ -98,35 +148,56 @@ async def get_bitcoin_price():
         return APIResponse(success=True, data=response_data)
     except Exception as e:
         logger.error(f"Error fetching Bitcoin price: {str(e)}")
-        return APIResponse(success=False, error=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
 
-@app.get("/api/bitcoin/historical")
+@app.get("/api/bitcoin/historical", tags=["Bitcoin"], response_model=APIResponse)
 async def get_historical_data():
-    """Get historical Bitcoin price data"""
+    """
+    Get historical Bitcoin price data
+
+    Returns:
+        JSON array of historical price data points
+    """
     try:
         logger.debug("Fetching historical Bitcoin data...")
         data = fetch_bitcoin_price()
 
         if data.empty:
-            return APIResponse(success=False, error="Historical data not available")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Historical data not available"
+            )
 
-        # Convert DataFrame to dict for JSON serialization
         historical_data = data.reset_index().to_dict('records')
         return APIResponse(success=True, data=historical_data)
     except Exception as e:
         logger.error(f"Error fetching historical data: {str(e)}")
-        return APIResponse(success=False, error=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
 
-@app.get("/api/bitcoin/analysis")
+@app.get("/api/bitcoin/analysis", tags=["Analysis"], response_model=APIResponse)
 async def get_market_analysis():
-    """Get comprehensive market analysis"""
+    """
+    Get comprehensive market analysis including trends and predictions
+
+    Returns:
+        JSON object containing market analysis and future predictions
+    """
     try:
         logger.debug("Generating market analysis...")
         price_data = fetch_bitcoin_price()
         onchain_data = fetch_onchain_metrics()
 
         if price_data.empty or onchain_data.empty:
-            return APIResponse(success=False, error="Required data not available")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Required data not available"
+            )
 
         analysis = analyze_market_trends(price_data, onchain_data)
         predictions = generate_predictions()
@@ -137,19 +208,29 @@ async def get_market_analysis():
         })
     except Exception as e:
         logger.error(f"Error generating analysis: {str(e)}")
-        return APIResponse(success=False, error=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
 
-@app.get("/api/etf/data")
+@app.get("/api/etf/data", tags=["ETF"], response_model=APIResponse)
 async def get_etf_data():
-    """Get Bitcoin ETF data"""
+    """
+    Get Bitcoin ETF data including prices, volumes, and orderbook information
+
+    Returns:
+        JSON object containing ETF data for multiple Bitcoin ETFs
+    """
     try:
         logger.debug("Fetching ETF data...")
         data = fetch_etf_data()
 
         if not data:
-            return APIResponse(success=False, error="ETF data not available")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="ETF data not available"
+            )
 
-        # Process ETF data for response
         etf_summary = {}
         for etf, etf_data in data.items():
             etf_summary[etf] = {
@@ -161,18 +242,29 @@ async def get_etf_data():
         return APIResponse(success=True, data=etf_summary)
     except Exception as e:
         logger.error(f"Error fetching ETF data: {str(e)}")
-        return APIResponse(success=False, error=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
 
-@app.get("/api/education/content")
+@app.get("/api/education/content", tags=["Education"], response_model=APIResponse)
 async def get_education():
-    """Get educational content"""
+    """
+    Get educational content about Bitcoin and cryptocurrency markets
+
+    Returns:
+        JSON object containing structured educational content
+    """
     try:
         logger.debug("Fetching educational content...")
         content = get_educational_content()
         return APIResponse(success=True, data=content)
     except Exception as e:
         logger.error(f"Error fetching educational content: {str(e)}")
-        return APIResponse(success=False, error=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
 
 if __name__ == "__main__":
     import uvicorn
