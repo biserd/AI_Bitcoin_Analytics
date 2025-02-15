@@ -8,7 +8,18 @@
 }
 
 .main .block-container {
-    padding-top: 2rem;
+    padding-top: 1rem;
+}
+
+/* Reduce header spacing */
+.stApp header {
+    height: auto !important;
+}
+
+/* Optimize title margins */
+h1:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
 }
 
 /* Sidebar */
