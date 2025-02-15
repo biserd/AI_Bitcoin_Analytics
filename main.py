@@ -55,6 +55,12 @@ st.markdown("""
 
 # CSS is now loaded via config.toml
 
+# Load key metrics for homepage
+with st.spinner('Fetching latest data...'):
+    btc_price = fetch_bitcoin_price()
+    etf_data = fetch_etf_data()
+    onchain_data = fetch_onchain_metrics()
+
 # Header
 st.title("Bitcoin AI Analytics Dashboard")
 st.markdown("### Comprehensive Bitcoin ETF and On-Chain Analytics Platform")
