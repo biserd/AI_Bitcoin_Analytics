@@ -23,6 +23,10 @@ args = "FastAPI Server"
 task = "workflow.run"
 args = "Frontend"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Streamlit App"
+
 [[workflows.workflow]]
 name = "FastAPI Server"
 author = "agent"
@@ -52,6 +56,21 @@ task = "packager.installForAll"
 task = "shell.exec"
 args = "cd frontend && npm run dev"
 waitForPort = 5173
+
+[[workflows.workflow]]
+name = "Streamlit App"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "streamlit run main.py"
+waitForPort = 5000
 
 [[ports]]
 localPort = 5000
