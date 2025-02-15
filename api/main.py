@@ -1,42 +1,40 @@
+"""
+Bitcoin Analytics Platform - REST API
+"""
 import sys
 import os
 import logging
 from typing import Dict, Any, Optional
-from pydantic import BaseModel
 from datetime import datetime
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
+from pydantic import BaseModel
 
 # Configure detailed logging
 logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
 )
 logger = logging.getLogger(__name__)
 
-# Add the project root to Python path
+# Add project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_root)
-logger.debug(f"Added to Python path: {project_root}")
 
-try:
-    # Import existing utilities and services
-    logger.debug("Importing utilities and services...")
-    from utils.data_fetcher import get_bitcoin_data, fetch_bitcoin_price, fetch_etf_data, fetch_onchain_metrics
-    from utils.database import get_db_connection, init_db
-    from utils.predictions import analyze_market_trends, generate_predictions
-    from utils.alerts import check_price_alerts
-    from api.services.metrics import format_metrics, calculate_market_metrics
-    from api.services.education import get_educational_content
-    logger.debug("Successfully imported all utilities and services")
-except Exception as e:
-    logger.error(f"Error importing utilities: {str(e)}")
-    raise
+# Import existing utilities and services
+from utils.data_fetcher import get_bitcoin_data, fetch_bitcoin_price, fetch_etf_data
+from utils.database import get_db_connection, init_db
+from utils.predictions import analyze_market_trends, generate_predictions
+from api.services.metrics import format_metrics, calculate_market_metrics
+from api.services.education import get_educational_content
 
-# Response models
+# Response model
 class APIResponse(BaseModel):
     success: bool
     data: Optional[Any] = None
@@ -46,27 +44,47 @@ class APIResponse(BaseModel):
 app = FastAPI(
     title="Bitcoin Analytics Dashboard API",
     description="""
-    Advanced Bitcoin market analysis and predictions API providing comprehensive 
-    cryptocurrency market insights through real-time data processing and visualization.
-
-    Features:
-    - Real-time Bitcoin price data
-    - ETF tracking and analysis
-    - Market predictions and trends
-    - On-chain metrics analysis
-    - Educational content
+    Advanced Bitcoin market analysis API providing comprehensive 
+    cryptocurrency insights through real-time data processing.
     """,
-    version="1.0.0"
+    version="1.0.0",
+    docs_url=None,
+    redoc_url=None,
 )
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Handle HTTP exceptions"""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "success": False,
+            "error": str(exc.detail),
+            "status_code": exc.status_code
+        }
+    )
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    """Handle general exceptions"""
+    logger.error(f"Unexpected error: {str(exc)}", exc_info=True)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "success": False,
+            "error": "Internal server error",
+            "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR
+        }
+    )
 
 @app.on_event("startup")
 async def startup_event():
