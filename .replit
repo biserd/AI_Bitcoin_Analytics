@@ -1,14 +1,14 @@
-modules = ["python-3.11"]
+modules = ["python-3.11", "python3"]
 
 [nix]
 channel = "stable-24_05"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["sh", "-c", "streamlit run main.py"]
+run = ["sh", "-c", "cd api && python main.py"]
 
 [workflows]
-runButton = "Streamlit App"
+runButton = "Project"
 
 [[workflows.workflow]]
 name = "Project"
@@ -17,10 +17,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Streamlit App"
+args = "FastAPI Server"
 
 [[workflows.workflow]]
-name = "Streamlit App"
+name = "FastAPI Server"
 author = "agent"
 
 [workflows.workflow.metadata]
@@ -31,12 +31,16 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "streamlit run main.py"
+args = "cd api && python main.py"
 waitForPort = 5000
 
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 8000
+externalPort = 8000
 
 [[ports]]
 localPort = 8501

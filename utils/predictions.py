@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-import streamlit as st
 import json
 
 def analyze_market_trends(price_data, onchain_data):
@@ -83,28 +82,19 @@ def analyze_market_trends(price_data, onchain_data):
             }
         }
 
-        # Convert the analysis dictionary to a JSON string before returning
         return json.dumps(analysis)
 
     except Exception as e:
-        st.error(f"Error generating market analysis: {str(e)}")
-        return None
+        raise Exception(f"Error generating market analysis: {str(e)}")
 
-@st.cache_data(ttl=3600)
-def generate_price_scenarios(price_data):
+def generate_predictions():
     """
     Generate potential price scenarios based on historical patterns
     """
     try:
-        current_price = price_data['Close'].iloc[-1]
-
-        # Calculate historical volatility
-        volatility = price_data['Close'].pct_change().std()
-
-        # Generate scenarios
+        # Simplified prediction for FastAPI implementation
         scenarios = {
             "bullish": {
-                "price": current_price * (1 + volatility * 2),
                 "probability": 0.3,
                 "factors": [
                     "Strong network growth",
@@ -113,7 +103,6 @@ def generate_price_scenarios(price_data):
                 ]
             },
             "neutral": {
-                "price": current_price * (1 + volatility * 0.5),
                 "probability": 0.4,
                 "factors": [
                     "Stable network metrics",
@@ -122,7 +111,6 @@ def generate_price_scenarios(price_data):
                 ]
             },
             "bearish": {
-                "price": current_price * (1 - volatility * 1.5),
                 "probability": 0.3,
                 "factors": [
                     "Decreasing network activity",
@@ -134,5 +122,4 @@ def generate_price_scenarios(price_data):
 
         return scenarios
     except Exception as e:
-        st.error(f"Error generating price scenarios: {str(e)}")
-        return None
+        raise Exception(f"Error generating price scenarios: {str(e)}")

@@ -2,32 +2,46 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-import streamlit as st
 from utils.database import (
     store_bitcoin_price, store_etf_data, store_onchain_metrics,
     BitcoinPrice, ETFData, OnchainMetric, get_db
 )
 from sqlalchemy import func
 
-@st.cache_data(ttl=3600)
+def get_bitcoin_data():
+    """Fetch current Bitcoin price data"""
+    try:
+        btc = yf.Ticker("BTC-USD")
+        history = btc.history(period="1d")
+
+        if isinstance(history, pd.DataFrame) and not history.empty:
+            latest_data = {
+                'price': float(history['Close'].iloc[-1]),
+                'volume': float(history['Volume'].iloc[-1]),
+                'change_24h': float(history['Close'].iloc[-1] - history['Open'].iloc[0]),
+                'timestamp': history.index[-1].isoformat()
+            }
+            # Store in database
+            store_bitcoin_price(history)
+            return latest_data
+        return None
+    except Exception as e:
+        raise Exception(f"Error fetching Bitcoin data: {str(e)}")
+
 def fetch_bitcoin_price():
-    """Fetch Bitcoin price data and store in database"""
+    """Fetch Bitcoin historical price data"""
     try:
         btc = yf.Ticker("BTC-USD")
         history = btc.history(period="1y")
 
-        if isinstance(history, pd.DataFrame) and history.empty:
-            st.error("No Bitcoin price data available")
-            return pd.DataFrame()
-
-        # Store in database
-        store_bitcoin_price(history)
-        return history
-    except Exception as e:
-        st.error(f"Error fetching Bitcoin price data: {str(e)}")
+        if isinstance(history, pd.DataFrame) and not history.empty:
+            # Store in database
+            store_bitcoin_price(history)
+            return history
         return pd.DataFrame()
+    except Exception as e:
+        raise Exception(f"Error fetching Bitcoin price data: {str(e)}")
 
-@st.cache_data(ttl=3600)
 def fetch_etf_data():
     """Fetch Bitcoin ETF data and store in database"""
     etfs = ['BITO', 'BITI', 'BTF']  # Example Bitcoin ETF tickers
@@ -81,15 +95,14 @@ def fetch_etf_data():
 
         except Exception as e:
             if "ambiguous" not in str(e).lower():  # Only show non-ambiguous errors
-                st.warning(f"Error fetching data for {etf}: {str(e)}")
+                print(f"Error fetching data for {etf}: {str(e)}") #Changed st.warning to print for FastAPI compatibility
             continue
 
     if len(data) == 0:
-        st.warning("No ETF data available")
+        print("No ETF data available") #Changed st.warning to print for FastAPI compatibility
 
     return data
 
-@st.cache_data(ttl=3600)
 def fetch_onchain_metrics():
     """Fetch on-chain metrics and store in database"""
     try:
@@ -112,8 +125,8 @@ def fetch_onchain_metrics():
         store_onchain_metrics(df)
         return df
     except Exception as e:
-        st.error(f"Error generating on-chain metrics: {str(e)}")
-        return pd.DataFrame()
+        raise Exception(f"Error generating on-chain metrics: {str(e)}") #Changed st.error to raise exception for FastAPI compatibility
+
 
 def get_historical_metrics():
     """Retrieve historical metrics from database"""
@@ -135,5 +148,4 @@ def get_historical_metrics():
             'hash_rate': metric.hash_rate
         } for metric in latest_metrics])
     except Exception as e:
-        st.error(f"Error retrieving historical metrics: {str(e)}")
-        return pd.DataFrame()
+        raise Exception(f"Error retrieving historical metrics: {str(e)}") #Changed st.error to raise exception for FastAPI compatibility

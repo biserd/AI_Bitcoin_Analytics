@@ -4,7 +4,7 @@ from sqlalchemy import create_engine, Column, Integer, Float, String, DateTime, 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
-import streamlit as st
+import logging
 
 # Initialize SQLAlchemy with PostgreSQL
 try:
@@ -16,7 +16,7 @@ try:
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     Base = declarative_base()
 except Exception as e:
-    st.error(f"Database initialization error: {str(e)}")
+    logging.error(f"Database initialization error: {str(e)}")
     raise
 
 class BitcoinPrice(Base):
@@ -60,10 +60,10 @@ def init_db():
 
         if not tables_exist:
             Base.metadata.create_all(bind=engine)
-            st.success("Database tables created successfully")
+            logging.info("Database tables created successfully")
         return True
     except Exception as e:
-        st.error(f"Failed to initialize database: {str(e)}")
+        logging.error(f"Failed to initialize database: {str(e)}")
         return False
 
 def get_db():
@@ -74,11 +74,15 @@ def get_db():
     finally:
         db.close()
 
+# Alias for compatibility with main.py
+get_db_connection = get_db
+
 def store_bitcoin_price(df):
     """Store Bitcoin price data in the database"""
     if df.empty:
         return
 
+    db = None
     try:
         db = next(get_db())
         for index, row in df.iterrows():
@@ -93,12 +97,12 @@ def store_bitcoin_price(df):
                 )
                 db.merge(price)
             except (ValueError, TypeError) as e:
-                st.warning(f"Skipping invalid price data: {str(e)}")
+                logging.warning(f"Skipping invalid price data: {str(e)}")
                 continue
         db.commit()
     except Exception as e:
-        st.error(f"Failed to store Bitcoin price data: {str(e)}")
-        if 'db' in locals():
+        logging.error(f"Failed to store Bitcoin price data: {str(e)}")
+        if db is not None:
             db.rollback()
 
 def store_etf_data(symbol, data):
@@ -106,6 +110,7 @@ def store_etf_data(symbol, data):
     if not data or not data.get('history') or data['history'].empty:
         return
 
+    db = None
     try:
         db = next(get_db())
         timestamp = datetime.now()
@@ -128,8 +133,8 @@ def store_etf_data(symbol, data):
         db.merge(etf)
         db.commit()
     except Exception as e:
-        st.error(f"Failed to store ETF data: {str(e)}")
-        if 'db' in locals():
+        logging.error(f"Failed to store ETF data: {str(e)}")
+        if db is not None:
             db.rollback()
 
 def store_onchain_metrics(metrics_df):
@@ -137,26 +142,27 @@ def store_onchain_metrics(metrics_df):
     if metrics_df.empty:
         return
 
+    db = None
     try:
         db = next(get_db())
         for index, row in metrics_df.iterrows():
             try:
                 metric = OnchainMetric(
-                    timestamp=index,  # Use the index as timestamp since it contains the date
+                    timestamp=index,
                     active_addresses=int(row['active_addresses']),
                     transaction_volume=float(row['transaction_volume']),
                     hash_rate=float(row['hash_rate'])
                 )
                 db.merge(metric)
             except (ValueError, TypeError) as e:
-                st.warning(f"Skipping invalid metric data: {str(e)}")
+                logging.warning(f"Skipping invalid metric data: {str(e)}")
                 continue
         db.commit()
     except Exception as e:
-        st.error(f"Failed to store on-chain metrics: {str(e)}")
-        if 'db' in locals():
+        logging.error(f"Failed to store on-chain metrics: {str(e)}")
+        if db is not None:
             db.rollback()
 
 # Initialize database on module import
 if not init_db():
-    st.error("Failed to initialize database. Some features may not work properly.")
+    logging.error("Failed to initialize database. Some features may not work properly.")
