@@ -5,10 +5,10 @@ channel = "stable-24_05"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["sh", "-c", "streamlit run main.py --server.address 0.0.0.0 --server.port 8501 --server.headless true --server.enableCORS=false"]
+run = ["sh", "-c", "streamlit run main.py --server.address 0.0.0.0 --server.port 3000"]
 
 [workflows]
-runButton = "Flask App"
+runButton = "Streamlit App"
 
 [[workflows.workflow]]
 name = "Project"
@@ -31,7 +31,7 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "streamlit run main.py --server.port 8501"
+args = "streamlit run main.py --server.address 0.0.0.0 --server.port 8501"
 waitForPort = 5000
 
 [[workflows.workflow]]
