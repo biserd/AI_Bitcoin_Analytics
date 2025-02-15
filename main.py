@@ -21,17 +21,27 @@ st.set_page_config(
         """
     })
 
+# Add Google Analytics
+ga_js = """
+    <!-- Google Analytics -->
+    <script>
+        // Create script element for gtag
+        var gtagScript = document.createElement('script');
+        gtagScript.async = true;
+        gtagScript.src = "https://www.googletagmanager.com/gtag/js?id=G-SHFQGXHS8E";
+        document.head.appendChild(gtagScript);
+        
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-SHFQGXHS8E');
+    </script>
+"""
+st.components.v1.html(ga_js, height=0)
+
 # Add meta tags
 st.markdown("""
     <head>
-        <!-- Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-SHFQGXHS8E"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-SHFQGXHS8E');
-        </script>
         <title>Bitcoin Analytics Dashboard | Real-time Crypto Analysis</title>
         <meta name="description" content="Comprehensive Bitcoin ETF and cryptocurrency analytics platform. Track real-time market data, ETF performance, and on-chain metrics.">
         <meta name="keywords" content="Bitcoin, ETF, Cryptocurrency, Market Analysis, Trading, Blockchain, Analytics">
