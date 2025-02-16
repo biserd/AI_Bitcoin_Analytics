@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, send_from_directory
 import pandas as pd
 from utils.data_fetcher import (
     get_bitcoin_data,
@@ -11,6 +11,7 @@ from utils.visualizations import (
     create_metric_chart,
     create_etf_comparison
 )
+from utils.sitemap import generate_sitemap, write_sitemap
 import logging
 import os
 
@@ -22,6 +23,39 @@ app = Flask(__name__)
 
 # Add sum function to Jinja context
 app.jinja_env.globals.update(sum=sum)
+
+# Flag to track if sitemap has been generated
+_sitemap_generated = False
+
+def get_routes():
+    """Get all routes with metadata for sitemap"""
+    return [
+        {'path': '/', 'changefreq': 'always', 'priority': '1.0'},
+        {'path': '/correlation', 'changefreq': 'daily', 'priority': '0.8'},
+        {'path': '/liquidity', 'changefreq': 'daily', 'priority': '0.8'},
+        {'path': '/predictions', 'changefreq': 'daily', 'priority': '0.8'},
+        {'path': '/education', 'changefreq': 'weekly', 'priority': '0.7'}
+    ]
+
+@app.before_request
+def init_sitemap():
+    """Generate sitemap.xml before first request"""
+    global _sitemap_generated
+    if not _sitemap_generated:
+        try:
+            base_url = 'https://bitcoin-etf-analytics.replit.app'
+            routes = get_routes()
+            sitemap_content = generate_sitemap(base_url, routes)
+            write_sitemap(sitemap_content)
+            logger.info("Sitemap generated successfully")
+            _sitemap_generated = True
+        except Exception as e:
+            logger.error(f"Error generating sitemap: {str(e)}")
+
+@app.route('/sitemap.xml')
+def serve_sitemap():
+    """Serve the sitemap.xml file"""
+    return send_from_directory('.', 'sitemap.xml')
 
 @app.route('/')
 def index():
