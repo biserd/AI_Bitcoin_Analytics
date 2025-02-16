@@ -10,14 +10,14 @@
     <meta property="og:type" content="{% block og_type %}website{% endblock %}">
     <meta property="og:url" content="{{ request.url }}">
     <meta property="og:title" content="{% block og_title %}Bitcoin Analytics Dashboard{% endblock %}">
-    <meta property="og:description" content="{% block og_description %}{% block meta_description %}{% endblock %}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Comprehensive cryptocurrency market insights through interactive data visualization{% endblock %}">
     <meta property="og:image" content="{% block og_image %}/static/bitcoin-analytics-preview.jpg{% endblock %}">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{% block twitter_title %}{% block og_title %}{% endblock %}{% endblock %}">
-    <meta name="twitter:description" content="{% block twitter_description %}{% block og_description %}{% endblock %}{% endblock %}">
-    <meta name="twitter:image" content="{% block twitter_image %}{% block og_image %}{% endblock %}{% endblock %}">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ self.og_title() }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ self.og_description() }}{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ self.og_image() }}{% endblock %}">
 
     <title>{% block title %}Bitcoin Analytics Dashboard{% endblock %}</title>
     <!-- Load Plotly -->
