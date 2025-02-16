@@ -7,6 +7,9 @@ from utils.database import (
     store_bitcoin_price, store_etf_data, store_onchain_metrics,
     BitcoinPrice, ETFData, OnchainMetric, get_db
 )
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_bitcoin_data():
     """Fetch current Bitcoin price data"""
@@ -52,11 +55,13 @@ def fetch_etf_data():
             ticker = yf.Ticker(etf)
             history = ticker.history(period="1y")
 
-            if not isinstance(history, pd.DataFrame) or history.empty or len(history.index) == 0:
+            if not isinstance(history, pd.DataFrame) or history.empty:
+                logger.warning(f"No data available for ETF {etf}")
                 continue
 
             required_columns = ['Close', 'Open', 'High', 'Low', 'Volume']
             if not all(col in history.columns for col in required_columns):
+                logger.warning(f"Missing required columns for ETF {etf}")
                 continue
 
             # Convert any numeric columns to float
@@ -65,7 +70,7 @@ def fetch_etf_data():
                     history[col] = history[col].astype(float)
 
             # Generate simulated orderbook data
-            current_price = history['Close'].iloc[-1]
+            current_price = float(history['Close'].iloc[-1])
             spread_percentage = 0.005  # 0.5% spread for better visibility
             depth_levels = 10
 
@@ -74,7 +79,7 @@ def fetch_etf_data():
             ask_prices = [current_price * (1 + spread_percentage * (i + 1)) for i in range(depth_levels)]
 
             # Generate more realistic volumes that decrease exponentially
-            base_volume = history['Volume'].mean() / 50  # Adjusted divisor for better scale
+            base_volume = float(history['Volume'].mean()) / 50  # Adjusted divisor for better scale
             volumes = [base_volume * np.exp(-0.3 * i) for i in range(depth_levels)]
 
             # Create orderbook with sorted prices and volumes
@@ -92,14 +97,15 @@ def fetch_etf_data():
 
             # Store valid data in database
             store_etf_data(etf, data[etf])
+            logger.info(f"Successfully fetched and stored data for ETF {etf}")
 
         except Exception as e:
-            if "ambiguous" not in str(e).lower():  # Only show non-ambiguous errors
-                print(f"Error fetching data for {etf}: {str(e)}")
+            logger.error(f"Error fetching data for {etf}: {str(e)}")
             continue
 
     if len(data) == 0:
-        print("No ETF data available")
+        logger.warning("No ETF data available")
+        return None
 
     return data
 

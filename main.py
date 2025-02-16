@@ -19,6 +19,9 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
+# Add sum function to Jinja context
+app.jinja_env.globals.update(sum=sum)
+
 @app.route('/')
 def index():
     """Main dashboard page"""
@@ -78,6 +81,9 @@ def liquidity():
     """Liquidity analysis page"""
     try:
         etf_data = fetch_etf_data()
+        logger.info(f"Fetched ETF data: {etf_data}")  # Add logging
+        if not etf_data:
+            return render_template('liquidity.html', error="Unable to fetch ETF data")
         return render_template('liquidity.html', etf_data=etf_data)
     except Exception as e:
         logger.error(f"Error in liquidity analysis: {str(e)}", exc_info=True)
