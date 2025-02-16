@@ -156,6 +156,11 @@ def education():
     """Educational content page"""
     return render_template('education.html')
 
+@app.route('/cost-analysis')
+def cost_analysis():
+    """Cost analysis page"""
+    return render_template('cost_analysis.html')
+
 @app.route('/health')
 def health_check():
     """Simple health check endpoint"""
