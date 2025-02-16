@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Education - Bitcoin Analytics{% endblock %}
+
+{% block content %}
+<h1>Bitcoin Education Hub</h1>
+
+<div class="chart-container">
+    <h2>Understanding Bitcoin ETFs</h2>
+    <p>
+        Bitcoin ETFs (Exchange-Traded Funds) are investment vehicles that track the price of Bitcoin 
+        and trade on traditional stock exchanges. They allow investors to gain exposure to Bitcoin 
+        without directly owning the cryptocurrency.
+    </p>
+    
+    <h3>Key Benefits of Bitcoin ETFs</h3>
+    <ul>
+        <li>Regulated investment vehicle</li>
+        <li>Easy to buy and sell through traditional brokerage accounts</li>
+        <li>No need for crypto wallets or direct crypto custody</li>
+        <li>Potential tax advantages in certain accounts</li>
+    </ul>
+</div>
+
+<div class="chart-container">
+    <h2>On-chain Metrics Explained</h2>
+    <p>
+        On-chain metrics are measurements of activity occurring on the Bitcoin blockchain. 
+        They provide insights into network usage and health.
+    </p>
+    
+    <h3>Key Metrics</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="metric-card">
+            <h4>Active Addresses</h4>
+            <p>Number of unique addresses participating in transactions</p>
+        </div>
+        <div class="metric-card">
+            <h4>Transaction Volume</h4>
+            <p>Total value of Bitcoin being transferred</p>
+        </div>
+        <div class="metric-card">
+            <h4>Hash Rate</h4>
+            <p>Total computational power securing the network</p>
+        </div>
+        <div class="metric-card">
+            <h4>Network Fee</h4>
+            <p>Cost of sending transactions on the network</p>
+        </div>
+    </div>
+</div>
+
+<div class="chart-container">
+    <h2>Additional Resources</h2>
+    <ul>
+        <li><a href="https://bitcoin.org/bitcoin.pdf" target="_blank">Bitcoin Whitepaper</a></li>
+        <li><a href="https://bitcoin.org/en/how-it-works" target="_blank">Understanding Blockchain Technology</a></li>
+        <li><a href="https://bitcoin.org/en/development" target="_blank">Bitcoin Development</a></li>
+    </ul>
+</div>
+{% endblock %}

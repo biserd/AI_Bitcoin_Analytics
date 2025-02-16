@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Liquidity Analysis - Bitcoin Analytics{% endblock %}
+
+{% block content %}
+<h1>Market Liquidity Analysis</h1>
+
+{% if etf_data %}
+    {% for etf, data in etf_data.items() %}
+        <div class="chart-container">
+            <h2>{{ etf }} Order Book Depth</h2>
+            <div id="{{ etf }}_orderbook"></div>
+            <script>
+                var trace1 = {
+                    x: {{ data['orderbook']['bid_volumes'] | tojson }},
+                    y: {{ data['orderbook']['bid_prices'] | tojson }},
+                    name: 'Bids',
+                    orientation: 'h',
+                    type: 'bar',
+                    marker: {
+                        color: 'rgba(33, 206, 153, 0.7)'
+                    }
+                };
+
+                var trace2 = {
+                    x: {{ data['orderbook']['ask_volumes'] | tojson }},
+                    y: {{ data['orderbook']['ask_prices'] | tojson }},
+                    name: 'Asks',
+                    orientation: 'h',
+                    type: 'bar',
+                    marker: {
+                        color: 'rgba(255, 80, 0, 0.7)'
+                    }
+                };
+
+                var layout = {
+                    title: '{{ etf }} Order Book',
+                    barmode: 'overlay',
+                    yaxis: {title: 'Price (USD)'},
+                    xaxis: {title: 'Volume'},
+                    paper_bgcolor: 'white',
+                    plot_bgcolor: 'white'
+                };
+
+                Plotly.newPlot('{{ etf }}_orderbook', [trace1, trace2], layout);
+            </script>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                <div class="metric-card">
+                    <h3>Total Bid Volume</h3>
+                    <p>${{ "{:,.0f}".format(sum(data['orderbook']['bid_volumes'])) }}</p>
+                </div>
+                <div class="metric-card">
+                    <h3>Total Ask Volume</h3>
+                    <p>${{ "{:,.0f}".format(sum(data['orderbook']['ask_volumes'])) }}</p>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="error">Unable to fetch ETF data for liquidity analysis.</div>
+{% endif %}
+{% endblock %}

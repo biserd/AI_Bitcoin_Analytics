@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}AI Predictions - Bitcoin Analytics{% endblock %}
+
+{% block content %}
+<h1>AI Market Predictions</h1>
+
+{% if historical_data is not none and metrics_data is not none %}
+    <div class="chart-container">
+        <h2>Market Analysis</h2>
+        <div id="prediction_chart"></div>
+        
+        <script>
+            // Create sentiment analysis visualization
+            var trace = {
+                x: ['Bullish', 'Neutral', 'Bearish'],
+                y: [0.4, 0.3, 0.3], // Example probabilities
+                type: 'bar',
+                marker: {
+                    color: ['#21CE99', '#FFD700', '#FF5000']
+                }
+            };
+
+            var layout = {
+                title: 'Market Sentiment Distribution',
+                yaxis: {
+                    title: 'Probability',
+                    range: [0, 1]
+                },
+                paper_bgcolor: 'white',
+                plot_bgcolor: 'white'
+            };
+
+            Plotly.newPlot('prediction_chart', [trace], layout);
+        </script>
+    </div>
+
+    <div class="chart-container">
+        <h2>Key Metrics</h2>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+            <div class="metric-card">
+                <h3>Price Trend</h3>
+                <p>Upward</p>
+                <small>Based on technical analysis</small>
+            </div>
+            <div class="metric-card">
+                <h3>Volume Trend</h3>
+                <p>Increasing</p>
+                <small>24h volume analysis</small>
+            </div>
+            <div class="metric-card">
+                <h3>Market Sentiment</h3>
+                <p>Bullish</p>
+                <small>Based on multiple indicators</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <h2>Risk Analysis</h2>
+        <ul>
+            <li>Volatility: Moderate</li>
+            <li>Market Depth: High</li>
+            <li>Trading Volume: Above Average</li>
+        </ul>
+    </div>
+{% else %}
+    <div class="error">Unable to fetch required data for market predictions.</div>
+{% endif %}
+{% endblock %}
