@@ -34,20 +34,33 @@ def analyze_market_trends(price_data, onchain_data):
 
         bullish_factors = sum(sentiment_factors)
 
+        # Calculate sentiment and confidence scores
         if bullish_factors >= 2:
             sentiment = "bullish"
-            confidence = min(0.5 + (bullish_factors - 2) * 0.25 + abs(recent_price_change) * 0.01, 0.95)
+            confidence_scores = {
+                "bullish": 0.6,
+                "neutral": 0.3,
+                "bearish": 0.1
+            }
         elif bullish_factors <= 1:
             sentiment = "bearish"
-            confidence = min(0.5 + (1 - bullish_factors) * 0.25 + abs(recent_price_change) * 0.01, 0.95)
+            confidence_scores = {
+                "bullish": 0.1,
+                "neutral": 0.3,
+                "bearish": 0.6
+            }
         else:
             sentiment = "neutral"
-            confidence = 0.5
+            confidence_scores = {
+                "bullish": 0.33,
+                "neutral": 0.34,
+                "bearish": 0.33
+            }
 
-        # Generate analysis
+        # Generate analysis with detailed insights
         analysis = {
             "market_sentiment": sentiment,
-            "confidence_score": confidence,
+            "confidence_scores": confidence_scores,
             "key_factors": [
                 f"Price {'increased' if recent_price_change > 0 else 'decreased'} by {abs(recent_price_change):.1f}%",
                 f"Trading volume {'increased' if volume_change > 0 else 'decreased'} by {abs(volume_change):.1f}%",
@@ -63,23 +76,10 @@ def analyze_market_trends(price_data, onchain_data):
                 f"suggesting potential for {'continued' if sentiment == 'bullish' else 'reversal in'} current trend."
             ),
             "risk_factors": [
-                f"High market volatility ({volatility:.1f}%)" if volatility > 20 else "Stable market conditions",
-                "Decreasing network activity" if active_addresses_change < 0 else "Healthy network growth",
-                "Low trading volume" if volume_change < 0 else "Strong trading volume"
-            ],
-            "trading_volume_analysis": (
-                f"Average 7-day trading volume: ${avg_volume:,.0f}. "
-                f"Volume is {volume_change:+.1f}% compared to last week."
-            ),
-            "prediction": {
-                "price_direction": "up" if sentiment == "bullish" else "down" if sentiment == "bearish" else "sideways",
-                "confidence": confidence,
-                "supporting_metrics": [
-                    "Price momentum",
-                    "Volume trend",
-                    "Network activity"
-                ]
-            }
+                f"{'High market volatility' if volatility > 20 else 'Stable market conditions'} ({volatility:.1f}%)",
+                f"{'Declining' if active_addresses_change < 0 else 'Healthy'} network growth",
+                f"{'Low' if volume_change < 0 else 'Strong'} trading volume"
+            ]
         }
 
         return json.dumps(analysis)
@@ -88,14 +88,11 @@ def analyze_market_trends(price_data, onchain_data):
         raise Exception(f"Error generating market analysis: {str(e)}")
 
 def generate_predictions():
-    """
-    Generate potential price scenarios based on historical patterns
-    """
+    """Generate potential price scenarios based on historical patterns"""
     try:
-        # Simplified prediction for FastAPI implementation
         scenarios = {
             "bullish": {
-                "probability": 0.3,
+                "probability": 0.4,
                 "factors": [
                     "Strong network growth",
                     "Increasing trading volume",
@@ -103,7 +100,7 @@ def generate_predictions():
                 ]
             },
             "neutral": {
-                "probability": 0.4,
+                "probability": 0.3,
                 "factors": [
                     "Stable network metrics",
                     "Average trading volume",

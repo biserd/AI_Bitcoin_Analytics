@@ -12,8 +12,10 @@ from utils.visualizations import (
     create_etf_comparison
 )
 from utils.sitemap import generate_sitemap, write_sitemap
+from utils.predictions import analyze_market_trends, generate_predictions # Fixed import path
 import logging
 import os
+import json
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -130,10 +132,21 @@ def predictions():
     try:
         historical_data = fetch_bitcoin_price()
         metrics_data = fetch_onchain_metrics()
-        return render_template('predictions.html',
-            historical_data=historical_data,
-            metrics_data=metrics_data
-        )
+
+        if not historical_data.empty and not metrics_data.empty:
+            # Generate market analysis
+            analysis = json.loads(analyze_market_trends(historical_data, metrics_data))
+            predictions = generate_predictions()
+
+            return render_template('predictions.html',
+                historical_data=historical_data,
+                metrics_data=metrics_data,
+                analysis=analysis,
+                predictions=predictions
+            )
+        else:
+            logger.warning("Missing data for predictions")
+            return render_template('predictions.html', error="Unable to fetch required data")
     except Exception as e:
         logger.error(f"Error in predictions: {str(e)}", exc_info=True)
         return render_template('predictions.html', error=str(e))
