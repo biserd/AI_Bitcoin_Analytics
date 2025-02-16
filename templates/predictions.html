@@ -2,6 +2,42 @@
 
 {% block title %}AI Predictions - Bitcoin Analytics{% endblock %}
 
+{% block meta_description %}Advanced Bitcoin price predictions and market analysis powered by artificial intelligence and machine learning{% endblock %}
+
+{% block meta_keywords %}bitcoin predictions, crypto forecast, AI trading analysis, market sentiment, price prediction{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "AI-Powered Bitcoin Market Predictions",
+    "description": "Advanced cryptocurrency market predictions using artificial intelligence and machine learning",
+    "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [{
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "{{ request.url_root }}"
+        }, {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "AI Predictions",
+            "item": "{{ request.url }}"
+        }]
+    },
+    "mainEntity": {
+        "@type": "Dataset",
+        "name": "Bitcoin Market Predictions Data",
+        "description": "AI-generated market predictions and sentiment analysis",
+        "temporalCoverage": "P1Y",
+        "spatialCoverage": "Global"
+    }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <h1>AI Market Predictions</h1>
 
@@ -9,7 +45,7 @@
     <div class="chart-container">
         <h2>Market Analysis</h2>
         <div id="prediction_chart"></div>
-        
+
         <script>
             // Create sentiment analysis visualization
             var trace = {

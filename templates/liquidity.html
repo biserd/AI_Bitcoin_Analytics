@@ -2,6 +2,42 @@
 
 {% block title %}Liquidity Analysis - Bitcoin Analytics{% endblock %}
 
+{% block meta_description %}Analyze Bitcoin ETF market liquidity with real-time order book visualization and depth charts{% endblock %}
+
+{% block meta_keywords %}bitcoin liquidity, ETF orderbook, market depth, trading volume, crypto liquidity analysis{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Bitcoin Market Liquidity Analysis",
+    "description": "Real-time analysis of Bitcoin ETF market liquidity and order book depth",
+    "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [{
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "{{ request.url_root }}"
+        }, {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Liquidity Analysis",
+            "item": "{{ request.url }}"
+        }]
+    },
+    "mainEntity": {
+        "@type": "Dataset",
+        "name": "Bitcoin ETF Liquidity Data",
+        "description": "Market depth and order book data for major Bitcoin ETFs",
+        "temporalCoverage": "Real-time",
+        "spatialCoverage": "Global"
+    }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <h1>Market Liquidity Analysis</h1>
 
