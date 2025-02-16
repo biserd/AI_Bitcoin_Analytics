@@ -36,7 +36,8 @@ def get_routes():
         {'path': '/correlation', 'changefreq': 'daily', 'priority': '0.8'},
         {'path': '/liquidity', 'changefreq': 'daily', 'priority': '0.8'},
         {'path': '/predictions', 'changefreq': 'daily', 'priority': '0.8'},
-        {'path': '/education', 'changefreq': 'weekly', 'priority': '0.7'}
+        {'path': '/education', 'changefreq': 'weekly', 'priority': '0.7'},
+        {'path': '/cost-analysis', 'changefreq': 'weekly', 'priority': '0.7'} #Added cost analysis route
     ]
 
 @app.before_request
