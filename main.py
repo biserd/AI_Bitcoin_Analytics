@@ -12,6 +12,7 @@ from utils.visualizations import (
     create_etf_comparison
 )
 import logging
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -21,6 +22,14 @@ app = Flask(__name__)
 
 # Add sum function to Jinja context
 app.jinja_env.globals.update(sum=sum)
+
+# Add Google Analytics tracking ID
+GA_TRACKING_ID = os.environ.get('GA_TRACKING_ID', 'G-XXXXXXXXXX')
+
+# Update context processor to include GA tracking ID
+@app.context_processor
+def inject_ga_tracking():
+    return dict(ga_tracking_id=GA_TRACKING_ID)
 
 @app.route('/')
 def index():
