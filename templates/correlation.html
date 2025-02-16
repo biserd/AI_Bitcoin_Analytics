@@ -2,6 +2,42 @@
 
 {% block title %}Correlation Analysis - Bitcoin Analytics{% endblock %}
 
+{% block meta_description %}Analyze correlations between Bitcoin and ETF prices with interactive charts and real-time data visualization{% endblock %}
+
+{% block meta_keywords %}bitcoin correlation, ETF correlation, crypto market analysis, bitcoin ETF tracking, price correlation{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Bitcoin & ETF Correlation Analysis",
+    "description": "Analyze correlations between Bitcoin and ETF prices with interactive charts and real-time data visualization",
+    "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [{
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "{{ request.url_root }}"
+        }, {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Correlation Analysis",
+            "item": "{{ request.url }}"
+        }]
+    },
+    "mainEntity": {
+        "@type": "Dataset",
+        "name": "Bitcoin-ETF Price Correlation Data",
+        "description": "Historical price correlation data between Bitcoin and major Bitcoin ETFs",
+        "temporalCoverage": "P1Y",
+        "spatialCoverage": "Global"
+    }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <h1>Bitcoin & ETF Correlation Analysis</h1>
 
