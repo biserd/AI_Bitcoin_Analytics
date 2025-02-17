@@ -105,6 +105,38 @@ const CostAnalysis = () => {
         layout={layout}
         style={{ width: '100%', height: '600px' }}
       />
+    <div style={{ marginTop: '2rem', padding: '1rem', background: '#f8f9fa', borderRadius: '8px' }}>
+        <h2>Detailed Cost Breakdown</h2>
+        <div style={{ marginTop: '1rem' }}>
+          <h3>Additional Considerations</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div style={{ padding: '1rem', background: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+              <h4>ETF Advantages</h4>
+              <ul>
+                <li>Professional management</li>
+                <li>Regulatory oversight</li>
+                <li>Easier tax reporting</li>
+              </ul>
+            </div>
+            <div style={{ padding: '1rem', background: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+              <h4>Bitcoin Advantages</h4>
+              <ul>
+                <li>Direct ownership</li>
+                <li>No management fees</li>
+                <li>Potential for yield generation</li>
+              </ul>
+            </div>
+          </div>
+          <div style={{ marginTop: '1rem', padding: '1rem', background: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+            <h4>Risk Factors</h4>
+            <ul>
+              <li>Tracking error</li>
+              <li>Liquidity considerations</li>
+              <li>Custody security</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

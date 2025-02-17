@@ -97,4 +97,79 @@
 
     updateChart();
 </script>
+
+<div class="additional-info">
+    <h2>Detailed Cost Breakdown</h2>
+    <div class="considerations">
+        <h3>Additional Considerations</h3>
+        <div class="advantages">
+            <div class="etf-advantages">
+                <h4>ETF Advantages</h4>
+                <ul>
+                    <li>Professional management</li>
+                    <li>Regulatory oversight</li>
+                    <li>Easier tax reporting</li>
+                </ul>
+            </div>
+            <div class="bitcoin-advantages">
+                <h4>Bitcoin Advantages</h4>
+                <ul>
+                    <li>Direct ownership</li>
+                    <li>No management fees</li>
+                    <li>Potential for yield generation</li>
+                </ul>
+            </div>
+        </div>
+        <div class="risk-factors">
+            <h4>Risk Factors</h4>
+            <ul>
+                <li>Tracking error</li>
+                <li>Liquidity considerations</li>
+                <li>Custody security</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+.additional-info {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.considerations {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.advantages {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.etf-advantages, .bitcoin-advantages, .risk-factors {
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+h4 {
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+ul {
+    margin: 0;
+    padding-left: 1.2rem;
+}
+
+li {
+    margin: 0.5rem 0;
+}
+</style>
 {% endblock %}
