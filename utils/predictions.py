@@ -8,6 +8,8 @@ def analyze_market_trends(price_data: pd.DataFrame, onchain_data: pd.DataFrame) 
         # Calculate basic trends
         price_change = price_data['Close'].pct_change().mean()
         volume_trend = price_data['Volume'].pct_change().mean()
+        avg_volume = price_data['Volume'].mean()
+        volume_change = (price_data['Volume'].mean() - price_data['Volume'].shift(7).mean()) / price_data['Volume'].shift(7).mean() * 100
 
         # Determine market sentiment
         if price_change > 0.02 and volume_trend > 0:
@@ -43,7 +45,33 @@ def analyze_market_trends(price_data: pd.DataFrame, onchain_data: pd.DataFrame) 
             "market_sentiment": sentiment,
             "confidence_score": confidence_score,
             "prediction": prediction,
-            "key_factors": factors
+            "key_factors": factors,
+            "scenario_factors": {
+                "bullish": [
+                    "Strong network growth",
+                    "Increasing trading volume",
+                    "Positive price momentum"
+                ],
+                "neutral": [
+                    "Stable network metrics",
+                    "Average trading volume",
+                    "Sideways price action"
+                ],
+                "bearish": [
+                    "Decreasing network activity",
+                    "Lower trading volume",
+                    "Negative price momentum"
+                ]
+            },
+            "volume_analysis": {
+                "avg_7day": avg_volume,
+                "volume_change": volume_change
+            },
+            "supporting_metrics": [
+                "Price momentum",
+                "Volume trend",
+                "Network activity"
+            ]
         }
 
         return json.dumps(analysis)

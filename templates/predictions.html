@@ -67,6 +67,28 @@
         margin-bottom: 0.5rem;
         border-radius: 4px;
     }
+    .scenario-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-gap: 2rem;
+    }
+    .scenario {
+        padding: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+    .scenario.bullish {
+        border-color: #21CE99;
+    }
+    .scenario.neutral {
+        border-color: #FFD700;
+    }
+    .scenario.bearish {
+        border-color: #FF5000;
+    }
+    .volume-analysis, .prediction-metrics {
+        margin-top: 2rem;
+    }
 </style>
 {% endblock %}
 
@@ -125,20 +147,52 @@
             <p>{{ analysis.short_term_outlook }}</p>
 
             <h3 class="outlook-title">
-                <span>📈</span> Key Factors
+                <span>📈</span> Scenario Analysis
             </h3>
-            <ul class="key-factors-list">
-                {% for factor in analysis.key_factors %}
-                    <li>{{ factor }}</li>
-                {% endfor %}
-            </ul>
-        </div>
 
-        <div class="outlook-section">
-            <h3 class="outlook-title">
-                <span>📊</span> Medium-term Outlook (30 days)
-            </h3>
-            <p>{{ analysis.medium_term_outlook }}</p>
+            <div class="scenario-container">
+                <div class="scenario bullish">
+                    <h4>Bullish Scenario Factors</h4>
+                    <ul>
+                        {% for factor in analysis.scenario_factors.bullish %}
+                            <li>{{ factor }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="scenario neutral">
+                    <h4>Neutral Scenario Factors</h4>
+                    <ul>
+                        {% for factor in analysis.scenario_factors.neutral %}
+                            <li>{{ factor }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="scenario bearish">
+                    <h4>Bearish Scenario Factors</h4>
+                    <ul>
+                        {% for factor in analysis.scenario_factors.bearish %}
+                            <li>{{ factor }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="volume-analysis">
+                <h4>Trading Volume Analysis</h4>
+                <p>Average 7-day trading volume: ${{ "{:,.0f}".format(analysis.volume_analysis.avg_7day) }}</p>
+                <p>Volume is {{ "{:.1f}%".format(analysis.volume_analysis.volume_change) }} compared to last week</p>
+            </div>
+
+            <div class="prediction-metrics">
+                <h4>Supporting Metrics</h4>
+                <ul>
+                    {% for metric in analysis.supporting_metrics %}
+                        <li>{{ metric }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
 
         <div>
