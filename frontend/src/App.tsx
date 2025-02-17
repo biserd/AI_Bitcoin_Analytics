@@ -45,6 +45,9 @@ const App = () => {
           <button onClick={() => setCurrentPage('predictions')}>
             🤖 AI Predictions
           </button>
+          <button onClick={() => setCurrentPage('costs')}>
+            💰 Cost Analysis
+          </button>
         </nav>
         {renderPage()}
       </div>
