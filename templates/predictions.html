@@ -262,28 +262,50 @@
         <div id="prediction_chart"></div>
 
         <script>
-            var trace = {
-                x: ['Bullish', 'Neutral', 'Bearish'],
-                y: [{{ analysis.confidence_score }}, 
-                    {{ analysis.confidence_score * 0.5 }}, 
-                    {{ 1 - analysis.confidence_score }}],
-                type: 'bar',
-                marker: {
-                    color: ['#21CE99', '#FFD700', '#FF5000']
-                }
-            };
+            var confidenceTrace = {
+            name: 'Confidence',
+            x: ['Bullish', 'Neutral', 'Bearish'],
+            y: [{{ analysis.confidence_score }}, 
+                {{ analysis.confidence_score * 0.5 }}, 
+                {{ 1 - analysis.confidence_score }}],
+            type: 'bar',
+            marker: {
+                color: ['#21CE99', '#FFD700', '#FF5000']
+            }
+        };
 
-            var layout = {
-                title: 'Market Sentiment Distribution',
-                yaxis: {
-                    title: 'Confidence Score',
-                    range: [0, 1]
-                },
-                paper_bgcolor: 'white',
-                plot_bgcolor: 'white'
-            };
+        var priceTrace = {
+            name: 'Price Prediction',
+            x: ['Bullish', 'Neutral', 'Bearish'],
+            y: [{{ analysis.price_predictions.bullish.price }}, 
+                {{ analysis.price_predictions.realistic.price }}, 
+                {{ analysis.price_predictions.bearish.price }}],
+            type: 'bar',
+            yaxis: 'y2',
+            marker: {
+                color: ['rgba(33, 206, 153, 0.3)', 'rgba(255, 215, 0, 0.3)', 'rgba(255, 80, 0, 0.3)']
+            }
+        };
 
-            Plotly.newPlot('prediction_chart', [trace], layout);
+        var layout = {
+            title: 'Market Sentiment & Price Predictions',
+            yaxis: {
+                title: 'Confidence Score',
+                range: [0, 1],
+                side: 'left'
+            },
+            yaxis2: {
+                title: 'Price Prediction (USD)',
+                overlaying: 'y',
+                side: 'right'
+            },
+            barmode: 'group',
+            paper_bgcolor: 'white',
+            plot_bgcolor: 'white',
+            showlegend: true
+        };
+
+        Plotly.newPlot('prediction_chart', [confidenceTrace, priceTrace], layout);
         </script>
     </div>
 {% else %}
