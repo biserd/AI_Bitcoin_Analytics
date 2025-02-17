@@ -76,6 +76,11 @@ def analyze_market_trends(price_data: pd.DataFrame, onchain_data: pd.DataFrame) 
                 "short_term": "7-day consolidation with increased volatility expected",
                 "medium_term": "30-day outlook shows potential upward trend based on institutional adoption",
                 "long_term": "Bullish outlook supported by halving cycle dynamics"
+            },
+            "price_predictions": {
+                "bearish": {"price": 38000, "reason": "Potential market correction and regulatory headwinds"},
+                "realistic": {"price": 52000, "reason": "Continued ETF inflows and market stability"},
+                "bullish": {"price": 69000, "reason": "Strong institutional adoption and supply shock from halving"}
             }
         }
 

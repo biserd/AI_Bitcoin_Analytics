@@ -209,6 +209,27 @@
                 </ul>
             </div>
 
+            <div class="price-predictions">
+                <h4>Price Predictions</h4>
+                <div class="scenario-container">
+                    <div class="scenario bearish">
+                        <h5>Bearish Case</h5>
+                        <p class="price">${{ "{:,.0f}".format(analysis.price_predictions.bearish.price) }}</p>
+                        <p class="reason">{{ analysis.price_predictions.bearish.reason }}</p>
+                    </div>
+                    <div class="scenario neutral">
+                        <h5>Realistic Case</h5>
+                        <p class="price">${{ "{:,.0f}".format(analysis.price_predictions.realistic.price) }}</p>
+                        <p class="reason">{{ analysis.price_predictions.realistic.reason }}</p>
+                    </div>
+                    <div class="scenario bullish">
+                        <h5>Bullish Case</h5>
+                        <p class="price">${{ "{:,.0f}".format(analysis.price_predictions.bullish.price) }}</p>
+                        <p class="reason">{{ analysis.price_predictions.bullish.reason }}</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="outlook-timeline">
                 <h4>Market Outlook Timeline</h4>
                 <div class="outlook-item">
