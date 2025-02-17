@@ -105,7 +105,7 @@
 {% block content %}
 <h1>AI Market Predictions</h1>
 
-{% if historical_data is not none and metrics_data is not none %}
+{% if analysis is defined and historical_data is not none and metrics_data is not none %}
     <div class="sentiment-card">
         <div class="sentiment-header">
             <div class="sentiment-indicator">
