@@ -89,6 +89,21 @@
     .volume-analysis, .prediction-metrics {
         margin-top: 2rem;
     }
+    .outlook-timeline {
+        margin-top: 2rem;
+        border-top: 1px solid #eee;
+        padding-top: 1rem;
+    }
+    .outlook-item {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    .outlook-item h5 {
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
 </style>
 {% endblock %}
 
@@ -192,6 +207,22 @@
                         <li>{{ metric }}</li>
                     {% endfor %}
                 </ul>
+            </div>
+
+            <div class="outlook-timeline">
+                <h4>Market Outlook Timeline</h4>
+                <div class="outlook-item">
+                    <h5>7-Day Outlook</h5>
+                    <p>{{ analysis.outlook.short_term }}</p>
+                </div>
+                <div class="outlook-item">
+                    <h5>30-Day Outlook</h5>
+                    <p>{{ analysis.outlook.medium_term }}</p>
+                </div>
+                <div class="outlook-item">
+                    <h5>Long-Term Outlook</h5>
+                    <p>{{ analysis.outlook.long_term }}</p>
+                </div>
             </div>
         </div>
 

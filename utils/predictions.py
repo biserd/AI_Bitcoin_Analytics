@@ -71,7 +71,12 @@ def analyze_market_trends(price_data: pd.DataFrame, onchain_data: pd.DataFrame) 
                 "Price momentum",
                 "Volume trend",
                 "Network activity"
-            ]
+            ],
+            "outlook": {
+                "short_term": "7-day consolidation with increased volatility expected",
+                "medium_term": "30-day outlook shows potential upward trend based on institutional adoption",
+                "long_term": "Bullish outlook supported by halving cycle dynamics"
+            }
         }
 
         return json.dumps(analysis)
