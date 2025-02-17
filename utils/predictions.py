@@ -78,9 +78,9 @@ def analyze_market_trends(price_data: pd.DataFrame, onchain_data: pd.DataFrame) 
                 "long_term": "Bullish outlook supported by halving cycle dynamics"
             },
             "price_predictions": {
-                "bearish": {"price": 38000, "reason": "Potential market correction and regulatory headwinds"},
-                "realistic": {"price": 52000, "reason": "Continued ETF inflows and market stability"},
-                "bullish": {"price": 69000, "reason": "Strong institutional adoption and supply shock from halving"}
+                "bearish": {"price": 78000, "reason": "Potential profit taking and short-term market correction"},
+                "realistic": {"price": 105000, "reason": "Sustained ETF inflows and pre-halving momentum"},
+                "bullish": {"price": 130000, "reason": "Accelerating institutional adoption and supply shock from halving"}
             }
         }
 
