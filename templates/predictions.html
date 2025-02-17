@@ -158,9 +158,9 @@
         <script>
             var trace = {
                 x: ['Bullish', 'Neutral', 'Bearish'],
-                y: [{{ analysis.confidence_scores.bullish }}, 
-                    {{ analysis.confidence_scores.neutral }}, 
-                    {{ analysis.confidence_scores.bearish }}],
+                y: [{{ analysis.confidence_score }}, 
+                    {{ analysis.confidence_score * 0.5 }}, 
+                    {{ 1 - analysis.confidence_score }}],
                 type: 'bar',
                 marker: {
                     color: ['#21CE99', '#FFD700', '#FF5000']

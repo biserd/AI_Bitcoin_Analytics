@@ -7,14 +7,14 @@ st.set_page_config(page_title="Liquidity Analysis", page_icon="💧")
 # Title and period selector
 st.title("Market Liquidity Analysis")
 
-# Simple dropdown implementation
-selected_period = st.selectbox(
-    "Select Time Period",
-    ["1 Week", "1 Month", "3 Months", "6 Months", "1 Year"],
-)
+periods = ["1_week", "1_month", "3_months", "6_months", "1_year"]
+period_display = {"1_week": "1 Week", "1_month": "1 Month", 
+                 "3_months": "3 Months", "6_months": "6 Months", 
+                 "1_year": "1 Year"}
 
-# Convert period to parameter format
-period_param = selected_period.lower().replace(" ", "_")
+period_param = st.selectbox("Select Time Period", 
+                          options=periods,
+                          format_func=lambda x: period_display[x])
 
 # Fetch data
 etf_data = fetch_etf_data(period=period_param)
