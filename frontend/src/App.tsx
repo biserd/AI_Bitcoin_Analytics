@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import CorrelationAnalysis from './pages/CorrelationAnalysis';
 import LiquidityAnalysis from './pages/LiquidityAnalysis';
 import AIPredictions from './pages/AIPredictions';
+import CostAnalysis from './pages/CostAnalysis';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,6 +25,8 @@ const App = () => {
         return <LiquidityAnalysis />;
       case 'predictions':
         return <AIPredictions />;
+      case 'costs':
+        return <CostAnalysis />;
       default:
         return <CorrelationAnalysis />;
     }
