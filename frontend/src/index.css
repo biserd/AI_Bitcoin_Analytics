@@ -23,8 +23,33 @@ button:hover {
   background-color: #f0f0f0;
 }
 
-nav {
+.main-nav {
   padding: 1rem;
   background-color: #f8f9fa;
   border-bottom: 1px solid #dee2e6;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.main-nav button {
+  padding: 0.75rem 1.25rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.main-nav button:hover {
+  background-color: #f0f0f0;
+  border-color: #adb5bd;
+}
+
+.main-nav button.active {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+  font-weight: 500;
 }
