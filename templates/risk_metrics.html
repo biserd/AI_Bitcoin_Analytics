@@ -1,0 +1,65 @@
+
+{% extends "base.html" %}
+
+{% block title %}Risk Metrics & Alerts - Bitcoin Analytics{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Risk Metrics & Alerts</h1>
+    
+    <div class="chart-container">
+        <h2>Risk Indicators</h2>
+        <div id="risk_gauge"></div>
+        <div id="volatility_chart"></div>
+    </div>
+
+    <div class="alerts-container">
+        <h2>Custom Alerts</h2>
+        <form id="alert-form">
+            <div class="input-group">
+                <label for="metric">Metric</label>
+                <select id="metric">
+                    <option value="price">Price</option>
+                    <option value="volatility">Volatility</option>
+                    <option value="volume">Volume</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="condition">Condition</label>
+                <select id="condition">
+                    <option value="above">Above</option>
+                    <option value="below">Below</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="threshold">Threshold</label>
+                <input type="number" id="threshold" min="0">
+            </div>
+            <button type="submit" class="btn">Create Alert</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const riskGaugeData = [{
+        type: "indicator",
+        mode: "gauge+number",
+        value: 65,
+        title: { text: "Market Risk Level" },
+        gauge: {
+            axis: { range: [null, 100] },
+            bar: { color: "#1E88E5" },
+            bgcolor: "white",
+            borderwidth: 2,
+            bordercolor: "gray",
+            steps: [
+                { range: [0, 30], color: "#21CE99" },
+                { range: [30, 70], color: "#FFD700" },
+                { range: [70, 100], color: "#FF5000" }
+            ]
+        }
+    }];
+
+    Plotly.newPlot('risk_gauge', riskGaugeData);
+</script>
+{% endblock %}

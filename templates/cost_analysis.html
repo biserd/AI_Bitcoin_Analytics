@@ -28,9 +28,73 @@
                 </select>
             </div>
         </form>
-        <div id="cost-comparison">
-            <!-- Cost comparison charts will be rendered here -->
-        </div>
+        <div id="cost-chart"></div>
     </div>
 </div>
+
+<script>
+    function calculateCosts(amount, years, freq) {
+        const tradesPerYear = {
+            'buy-hold': 1,
+            'monthly': 12,
+            'weekly': 52,
+            'daily': 252
+        };
+        const trades = tradesPerYear[freq];
+        
+        return {
+            'Spot Bitcoin': {
+                'Trading Fees': amount * 0.003 * trades * years,
+                'Custody Fees': 0,
+                'Withdrawal Fees': 15 * years
+            },
+            'Bitcoin ETFs': {
+                'Trading Fees': amount * 0.001 * trades * years,
+                'Management Fees': amount * 0.005 * years,
+                'Other Fees': 0
+            }
+        };
+    }
+
+    function updateChart() {
+        const amount = parseFloat(document.getElementById('investment-amount').value);
+        const years = parseFloat(document.getElementById('investment-period').value);
+        const freq = document.getElementById('trading-frequency').value;
+        
+        const costs = calculateCosts(amount, years, freq);
+        
+        const data = [{
+            name: 'Spot Bitcoin',
+            type: 'bar',
+            x: Object.keys(costs['Spot Bitcoin']),
+            y: Object.values(costs['Spot Bitcoin']),
+            marker: { color: '#F7931A' }
+        }, {
+            name: 'Bitcoin ETFs',
+            type: 'bar',
+            x: Object.keys(costs['Bitcoin ETFs']),
+            y: Object.values(costs['Bitcoin ETFs']),
+            marker: { color: '#1E88E5' }
+        }];
+
+        const layout = {
+            title: 'Cost Breakdown Comparison',
+            barmode: 'group',
+            yaxis: { title: 'Cost ($)' },
+            paper_bgcolor: 'white',
+            plot_bgcolor: 'white'
+        };
+
+        Plotly.newPlot('cost-chart', data, layout);
+    }
+
+    document.getElementById('investment-amount').addEventListener('change', updateChart);
+    document.getElementById('investment-period').addEventListener('input', function(e) {
+        document.getElementById('period-value').textContent = e.target.value + ' years';
+        updateChart();
+    });
+    document.getElementById('trading-frequency').addEventListener('change', updateChart);
+
+    updateChart();
+</script>
 {% endblock %}

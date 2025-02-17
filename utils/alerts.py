@@ -76,3 +76,34 @@ def check_price_alerts(price_data: dict, phone_number: str = None) -> dict:
     except Exception as e:
         logging.error(f"Error checking price alerts: {str(e)}")
         return {"success": False, "error": str(e)}
+import json
+from datetime import datetime
+
+class AlertSystem:
+    def __init__(self):
+        self.alerts = []
+
+    def add_alert(self, metric, condition, threshold):
+        alert = {
+            'id': len(self.alerts) + 1,
+            'metric': metric,
+            'condition': condition,
+            'threshold': threshold,
+            'created_at': datetime.now().isoformat()
+        }
+        self.alerts.append(alert)
+        return alert
+
+    def check_alerts(self, current_values):
+        triggered = []
+        for alert in self.alerts:
+            value = current_values.get(alert['metric'])
+            if value is None:
+                continue
+            
+            if alert['condition'] == 'above' and value > alert['threshold']:
+                triggered.append(alert)
+            elif alert['condition'] == 'below' and value < alert['threshold']:
+                triggered.append(alert)
+                
+        return triggered

@@ -37,7 +37,8 @@ def get_routes():
         {'path': '/liquidity', 'changefreq': 'daily', 'priority': '0.8'},
         {'path': '/predictions', 'changefreq': 'daily', 'priority': '0.8'},
         {'path': '/education', 'changefreq': 'weekly', 'priority': '0.7'},
-        {'path': '/cost-analysis', 'changefreq': 'weekly', 'priority': '0.7'} #Added cost analysis route
+        {'path': '/cost-analysis', 'changefreq': 'weekly', 'priority': '0.7'}, #Added cost analysis route
+        {'path': '/risk-metrics', 'changefreq': 'weekly', 'priority': '0.7'} #Added risk metrics route
     ]
 
 @app.before_request
@@ -160,7 +161,14 @@ def education():
 @app.route('/cost-analysis')
 def cost_analysis():
     """Cost analysis page"""
-    return render_template('cost_analysis.html')
+    # Placeholder for charts -  needs actual chart generation logic
+    cost_chart = "Cost Analysis Chart Placeholder"
+    return render_template('cost_analysis.html', cost_chart=cost_chart)
+
+@app.route('/risk-metrics')
+def risk_metrics():
+    """Risk metrics and alerts page"""
+    return render_template('risk_metrics.html')
 
 @app.route('/health')
 def health_check():
