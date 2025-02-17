@@ -6,7 +6,14 @@ st.set_page_config(page_title="Liquidity Analysis", page_icon="💧")
 
 st.title("Market Liquidity Analysis")
 
-etf_data = fetch_etf_data()
+# Add period selector
+period = st.selectbox(
+    "Select Time Period",
+    ["1 Week", "1 Month", "3 Months", "6 Months", "1 Year"],
+    index=0
+)
+
+etf_data = fetch_etf_data(period=period.lower().replace(" ", "_"))
 
 if etf_data:
     for etf, data in etf_data.items():

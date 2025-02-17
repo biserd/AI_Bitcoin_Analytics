@@ -45,7 +45,7 @@ def fetch_bitcoin_price():
     except Exception as e:
         raise Exception(f"Error fetching Bitcoin price data: {str(e)}")
 
-def fetch_etf_data():
+def fetch_etf_data(period='1_week'):
     """Fetch Bitcoin ETF data and store in database"""
     etfs = ['BITO', 'BITI', 'BTF']  # Example Bitcoin ETF tickers
     data = {}
