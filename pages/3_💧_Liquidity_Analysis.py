@@ -7,15 +7,27 @@ st.set_page_config(page_title="Liquidity Analysis", page_icon="💧")
 
 st.title("Market Liquidity Analysis")
 
-# Period selector
-period = st.select_slider(
-    "Select Analysis Period",
-    options=["1 Week", "1 Month", "3 Months", "6 Months", "1 Year"],
-    value="1 Week"
-)
-
-# Fetch data based on selected period
-etf_data = fetch_etf_data(period=period.lower().replace(" ", "_"))
+# Add period selector in a container
+with st.container():
+    period_options = {
+        "1 Week": "1_week",
+        "1 Month": "1_month",
+        "3 Months": "3_months",
+        "6 Months": "6_months",
+        "1 Year": "1_year"
+    }
+    
+    selected_period = st.selectbox(
+        "Select Analysis Period",
+        options=list(period_options.keys()),
+        key="liquidity_period_selector"
+    )
+    
+    # Convert selected period to the format expected by fetch_etf_data
+    period_param = period_options[selected_period]
+    
+    # Fetch data based on selected period
+    etf_data = fetch_etf_data(period=period_param)
 
 if etf_data:
     for etf, data in etf_data.items():
