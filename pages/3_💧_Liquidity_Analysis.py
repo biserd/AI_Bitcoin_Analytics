@@ -1,3 +1,4 @@
+
 import streamlit as st
 import plotly.graph_objects as go
 from utils.data_fetcher import fetch_etf_data
@@ -6,19 +7,15 @@ st.set_page_config(page_title="Liquidity Analysis", page_icon="💧")
 
 st.title("Market Liquidity Analysis")
 
-# Add period selector
-period = st.selectbox(
-    "Select Time Period",
-    ["1 Week", "1 Month", "3 Months", "6 Months", "1 Year"],
-    key="liquidity_period_selector"
+# Period selector
+period = st.select_slider(
+    "Select Analysis Period",
+    options=["1 Week", "1 Month", "3 Months", "6 Months", "1 Year"],
+    value="1 Week"
 )
 
-# Convert period to parameter for data fetching
-period_param = period.lower().replace(" ", "_")
-etf_data = fetch_etf_data(period=period_param)
-
-# Add a divider
-st.divider()
+# Fetch data based on selected period
+etf_data = fetch_etf_data(period=period.lower().replace(" ", "_"))
 
 if etf_data:
     for etf, data in etf_data.items():
