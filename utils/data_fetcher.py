@@ -47,6 +47,14 @@ def fetch_bitcoin_price():
 
 def fetch_etf_data(period='1_week'):
     """Fetch Bitcoin ETF data and store in database"""
+    period_map = {
+        '1_week': '7d',
+        '1_month': '30d',
+        '3_months': '90d',
+        '6_months': '180d',
+        '1_year': '365d'
+    }
+    interval = period_map.get(period, '7d')
     etfs = ['BITO', 'BITI', 'BTF']  # Example Bitcoin ETF tickers
     data = {}
 
